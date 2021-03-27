@@ -6,17 +6,17 @@ import (
 )
 
 type SimpleQueue struct {
-	Items []msg.Msg
+	Items []msg.IMsg
 }
 
 //Add item to end of queue
-func (q SimpleQueue) Add(m msg.Msg) uuid.UUID {
+func (q SimpleQueue) Add(m msg.IMsg) uuid.UUID {
 	q.Items = append(q.Items, m)
-	return m.Id
+	return m.GetId()
 }
 
 func New() SimpleQueue {
 	return SimpleQueue{
-		Items: make([]msg.Msg, 0),
+		Items: make([]msg.IMsg, 0),
 	}
 }
