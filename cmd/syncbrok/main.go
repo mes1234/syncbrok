@@ -9,11 +9,11 @@ import (
 
 func main() {
 
-	msg1 := msg.Init(nil, nil)
+	msg1 := msg.New(nil, nil)
 
-	msg2 := msg.Init(&msg1, nil)
+	msg2 := msg.New(&msg1, nil)
 
-	q := queue.Create()
+	q := queue.New()
 
 	q.Add(msg1)
 	q.Add(msg2)

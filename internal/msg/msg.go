@@ -12,7 +12,7 @@ type Msg struct {
 
 //Init initilizes new message for given parent and content
 //automatically assing global uniq uuid
-func Init(parent *Msg, content interface{}) Msg {
+func New(parent *Msg, content interface{}) Msg {
 	return Msg{
 		Id:              uuid.New(),
 		Parent:          parent,

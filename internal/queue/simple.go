@@ -15,7 +15,7 @@ func (q SimpleQueue) Add(m msg.Msg) uuid.UUID {
 	return m.Id
 }
 
-func Create() SimpleQueue {
+func New() SimpleQueue {
 	return SimpleQueue{
 		Items: make([]msg.Msg, 0),
 	}
