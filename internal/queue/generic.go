@@ -7,4 +7,5 @@ import (
 
 type Queue interface {
 	Add(msg.IMsg) uuid.UUID
+	GetItems() []msg.IMsg
 }
