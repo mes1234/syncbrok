@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/mes1234/syncbrok/internal/queueService"
+
 	"github.com/mes1234/syncbrok/internal/space"
 
 	"github.com/mes1234/syncbrok/internal/msg"
@@ -13,6 +15,8 @@ func main() {
 
 	// Begining of life
 	universe := space.NewSpace()
+	queueListner := queueService.NewSimpleQueueService()
+	queueListner.Start(universe)
 
 	universe.AddQueue(queue.NewSimpleQueue(), "first")
 
