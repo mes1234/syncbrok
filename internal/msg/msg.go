@@ -8,27 +8,27 @@ type IMsg interface {
 }
 
 //Message is an entity passed between channels
-type Msg struct {
-	Id              uuid.UUID
-	Parent          *IMsg
-	Content         interface{}
-	DeliveryCounter int
+type simpleMsg struct {
+	id              uuid.UUID
+	parent          *IMsg
+	content         interface{}
+	deliveryCounter int
 }
 
-func (m Msg) GetItems() interface{} {
-	return m.Content
+func (m simpleMsg) GetItems() interface{} {
+	return m.content
 }
 
-func (m Msg) GetId() uuid.UUID {
-	return m.Id
+func (m simpleMsg) GetId() uuid.UUID {
+	return m.id
 }
 
 //Init initilizes new message for given parent and content
 //automatically assing global uniq uuid
 func New(parent *IMsg, content interface{}) IMsg {
-	return Msg{
-		Id:              uuid.New(),
-		Parent:          parent,
-		Content:         content,
-		DeliveryCounter: 0}
+	return simpleMsg{
+		id:              uuid.New(),
+		parent:          parent,
+		content:         content,
+		deliveryCounter: 0}
 }
