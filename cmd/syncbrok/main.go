@@ -3,17 +3,24 @@ package main
 import (
 	"fmt"
 
+	"github.com/mes1234/syncbrok/internal/space"
+
 	"github.com/mes1234/syncbrok/internal/msg"
 	"github.com/mes1234/syncbrok/internal/queue"
 )
 
 func main() {
 
-	msg1 := msg.New(nil, nil)
+	// Begining of life
+	universe := space.NewSpace()
 
-	msg2 := msg.New(&msg1, nil)
+	universe.AddQueue(queue.NewSimpleQueue(), "first")
 
-	q := queue.New()
+	msg1 := msg.NewSimpleMsg(nil, nil)
+
+	msg2 := msg.NewSimpleMsg(&msg1, nil)
+
+	q := queue.NewSimpleQueue()
 
 	q.Add(msg1)
 	q.Add(msg2)
