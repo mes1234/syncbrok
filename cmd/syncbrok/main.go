@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/mes1234/syncbrok/internal/queueService"
 
@@ -17,7 +19,8 @@ func main() {
 	universe := space.NewSpace()
 	queueListner := queueService.NewSimpleQueueService()
 	queueListner.Start(universe)
-
+	log.Print("GO ON")
+	time.Sleep(10 * time.Second)
 	universe.AddQueue(queue.NewSimpleQueue(), "first")
 
 	msg1 := msg.NewSimpleMsg(nil, nil)
