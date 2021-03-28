@@ -1,6 +1,10 @@
 package msg
 
-import "github.com/google/uuid"
+import (
+	"log"
+
+	"github.com/google/uuid"
+)
 
 //Message is an entity passed between channels
 type simpleMsg struct {
@@ -8,6 +12,7 @@ type simpleMsg struct {
 	parent          *Msg
 	content         interface{}
 	deliveryCounter int
+	Callback        func(uuid.UUID)
 }
 
 func (m simpleMsg) GetItems() interface{} {
@@ -18,12 +23,19 @@ func (m simpleMsg) GetId() uuid.UUID {
 	return m.id
 }
 
+func (m simpleMsg) Process() {
+	log.Print("processing")
+	m.Callback(m.id)
+}
+
 //Init initilizes new message for given parent and content
 //automatically assing global uniq uuid
-func NewSimpleMsg(parent *Msg, content interface{}) Msg {
+func NewSimpleMsg(parent *Msg, content interface{}, handler func(uuid.UUID)) Msg {
 	return simpleMsg{
 		id:              uuid.New(),
 		parent:          parent,
 		content:         content,
-		deliveryCounter: 0}
+		deliveryCounter: 0,
+		Callback:        handler,
+	}
 }

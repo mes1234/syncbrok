@@ -20,6 +20,7 @@ func (q SimpleQueue) GetItems() []msg.Msg {
 func (q SimpleQueue) AddMsg(m msg.Msg) uuid.UUID {
 	q.items = append(q.items, m)
 	log.Print("Added item to  queue :", q.name)
+	go m.Process()
 	return m.GetId()
 }
 
