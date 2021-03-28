@@ -1,31 +1,24 @@
 package queueService
 
 import (
-	"log"
-	"time"
-
+	"github.com/mes1234/syncbrok/internal/msg"
+	"github.com/mes1234/syncbrok/internal/queue"
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
 type SimpleQueueService struct {
-	handler func()
-	space   space.Space
 }
 
-func simpleHandler() {
-	for {
-		time.Sleep(2 * time.Second)
-		log.Print("Hello, log file!")
-	}
+func (qs SimpleQueueService) NewQueueHandler(name string, s space.Space) *queue.Queue {
+	q := queue.NewSimpleQueue(name)
+	s.AddQueue(q, name)
+	return &q
 }
 
-func NewSimpleQueueService() SimpleQueueService {
-	return SimpleQueueService{
-		handler: simpleHandler,
-	}
+func (qs SimpleQueueService) NewMessageHandler(q queue.Queue, m msg.Msg) {
+	q.AddMsg(m)
 }
 
-func (qs SimpleQueueService) Start(space space.Space) {
-	qs.space = space
-	go qs.handler()
+func NewSimple() SimpleQueueService {
+	return SimpleQueueService{}
 }

@@ -1,12 +1,15 @@
 package queue
 
 import (
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
 )
 
 type SimpleQueue struct {
 	items []msg.Msg
+	name  string
 }
 
 func (q SimpleQueue) GetItems() []msg.Msg {
@@ -14,13 +17,15 @@ func (q SimpleQueue) GetItems() []msg.Msg {
 }
 
 //Add item to end of queue
-func (q SimpleQueue) Add(m msg.Msg) uuid.UUID {
+func (q SimpleQueue) AddMsg(m msg.Msg) uuid.UUID {
 	q.items = append(q.items, m)
+	log.Print("Added item to  queue :", q.name)
 	return m.GetId()
 }
 
-func NewSimpleQueue() Queue {
+func NewSimpleQueue(name string) Queue {
 	return SimpleQueue{
 		items: make([]msg.Msg, 0),
+		name:  name,
 	}
 }

@@ -6,6 +6,6 @@ import (
 )
 
 type Queue interface {
-	Add(msg.Msg) uuid.UUID
+	AddMsg(msg.Msg) uuid.UUID
 	GetItems() []msg.Msg
 }
