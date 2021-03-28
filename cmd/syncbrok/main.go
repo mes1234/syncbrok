@@ -11,8 +11,8 @@ func main() {
 
 	// Begining of life
 	universe := space.New()
-	queueListner := queueService.NewSimple()
-	handler := frontend.Fake(queueListner, universe)
+	queueListner := queueService.NewSimple(universe)
+	handler := frontend.Fake(queueListner)
 	handler()
 
 }

@@ -7,11 +7,12 @@ import (
 )
 
 type SimpleQueueService struct {
+	space.Space
 }
 
-func (qs SimpleQueueService) NewQueueHandler(name string, s space.Space) *queue.Queue {
+func (qs SimpleQueueService) NewQueueHandler(name string) *queue.Queue {
 	q := queue.NewSimpleQueue(name)
-	s.AddQueue(q, name)
+	qs.Space.AddQueue(q, name)
 	return &q
 }
 
@@ -19,6 +20,6 @@ func (qs SimpleQueueService) NewMessageHandler(q queue.Queue, m msg.Msg) {
 	q.AddMsg(m)
 }
 
-func NewSimple() SimpleQueueService {
-	return SimpleQueueService{}
+func NewSimple(s space.Space) SimpleQueueService {
+	return SimpleQueueService{Space: s}
 }
