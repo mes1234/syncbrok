@@ -10,10 +10,10 @@ type SimpleQueueService struct {
 	space.Space
 }
 
-func (qs SimpleQueueService) NewQueueHandler(name string) *queue.Queue {
+func (qs SimpleQueueService) NewQueueHandler(name string) queue.Queue {
 	q := queue.NewSimpleQueue(name)
 	qs.Space.AddQueue(q, name)
-	return &q
+	return q
 }
 
 func (qs SimpleQueueService) NewMessageHandler(q queue.Queue, m msg.Msg) {

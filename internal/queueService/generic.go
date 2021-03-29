@@ -6,6 +6,6 @@ import (
 )
 
 type QueueService interface {
-	NewQueueHandler(string) *queue.Queue
+	NewQueueHandler(string) queue.Queue
 	NewMessageHandler(queue.Queue, msg.Msg)
 }
