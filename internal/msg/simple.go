@@ -2,6 +2,7 @@ package msg
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,11 +34,12 @@ func (m simpleMsg) GetParentId() uuid.UUID {
 
 }
 
-func (m simpleMsg) Process(parentCompleted <-chan bool, selfCompleted chan<- bool) {
+func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup) {
+	defer wgSelf.Done()
 	log.Print("processing begins")
 	if m.parent != nil {
 		log.Print("I will wait for my parent to finish")
-		<-parentCompleted // wait for Parent to complete
+		wgParent.Wait()
 		log.Print("my parent completed I shall proceed")
 	} else {
 		log.Print("I dont have parent let me do my job")
@@ -45,7 +47,6 @@ func (m simpleMsg) Process(parentCompleted <-chan bool, selfCompleted chan<- boo
 	}
 
 	m.Callback(m.id)
-	selfCompleted <- true // I will notify my children that I completed
 }
 
 //Init initilizes new message for given parent and content
