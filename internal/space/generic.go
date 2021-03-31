@@ -1,9 +1,10 @@
 package space
 
 import (
-	"github.com/mes1234/syncbrok/internal/queue"
+	"github.com/mes1234/syncbrok/internal/msg"
 )
 
 type Space interface {
-	AddQueue(queue.Queue, string)
+	AddQueue(string)
+	Publish(string, msg.Msg)
 }
