@@ -14,10 +14,6 @@ type SimpleQueue struct {
 	name       string
 }
 
-func (q SimpleQueue) GetItems() []msg.Msg {
-	return q.items
-}
-
 func (q SimpleQueue) FindById(id uuid.UUID) (msg.Msg, *sync.WaitGroup) {
 	for index, element := range q.items {
 		if element.GetId() == id {

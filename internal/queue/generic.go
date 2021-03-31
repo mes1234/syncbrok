@@ -9,6 +9,5 @@ import (
 
 type Queue interface {
 	AddMsg(msg.Msg) uuid.UUID
-	GetItems() []msg.Msg
 	FindById(uuid.UUID) (msg.Msg, *sync.WaitGroup)
 }
