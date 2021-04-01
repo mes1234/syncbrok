@@ -2,19 +2,19 @@ package frontend
 
 import (
 	"github.com/google/uuid"
-
 	"github.com/mes1234/syncbrok/internal/msg"
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func MultiChild(s space.Space, handler func(uuid.UUID)) func() {
+func MultiChild(s space.Space, handler msg.Callback) func() {
 	return func() {
 		queueName := "simpleQueue"
 		s.AddQueue(queueName)
-		parent := msg.NewSimpleMsg(nil, nil, handler)
-		child1 := msg.NewSimpleMsg(parent, nil, handler)
-		child2 := msg.NewSimpleMsg(parent, nil, handler)
-		child3 := msg.NewSimpleMsg(parent, nil, handler)
+		s.Subscribe(queueName, handler)
+		parent := msg.NewSimpleMsg(uuid.Nil, []byte("I am you father"))
+		child1 := msg.NewSimpleMsg(parent.GetId(), []byte("I am you child"))
+		child2 := msg.NewSimpleMsg(parent.GetId(), []byte("I am you child"))
+		child3 := msg.NewSimpleMsg(parent.GetId(), []byte("I am you child"))
 		s.Publish(queueName, parent)
 		s.Publish(queueName, child1)
 		s.Publish(queueName, child2)

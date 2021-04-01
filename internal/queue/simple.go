@@ -8,16 +8,21 @@ import (
 	"github.com/mes1234/syncbrok/internal/msg"
 )
 
+type msgWithSync struct {
+	item msg.Msg
+	wg   *sync.WaitGroup
+}
+
 type SimpleQueue struct {
-	items      []msg.Msg
-	waitGroups []*sync.WaitGroup
-	name       string
+	items       []msgWithSync
+	name        string
+	subscribers []msg.Callback
 }
 
 func (q SimpleQueue) FindById(id uuid.UUID) (msg.Msg, *sync.WaitGroup) {
-	for index, element := range q.items {
-		if element.GetId() == id {
-			return element, q.waitGroups[index]
+	for _, element := range q.items {
+		if element.item.GetId() == id {
+			return element.item, element.wg
 		}
 	}
 	return nil, nil
@@ -32,17 +37,23 @@ func (q *SimpleQueue) AddMsg(m msg.Msg) uuid.UUID {
 	}
 	wgSelf := sync.WaitGroup{}
 	wgSelf.Add(1)
-	q.waitGroups = append(q.waitGroups, &wgSelf)
-	q.items = append(q.items, m)
+	newItem := msgWithSync{
+		item: m,
+		wg:   &wgSelf,
+	}
+	q.items = append(q.items, newItem)
 	log.Print("Added item to  queue :", q.name)
-	go m.Process(wgParent, &wgSelf)
+	go m.Process(wgParent, &wgSelf, q.subscribers)
 	return m.GetId()
+}
+
+func (q *SimpleQueue) AddCallback(callback msg.Callback) {
+	q.subscribers = append(q.subscribers, callback)
 }
 
 func NewSimpleQueue(name string) Queue {
 	return &SimpleQueue{
-		items:      make([]msg.Msg, 0),
-		waitGroups: make([]*sync.WaitGroup, 0),
-		name:       name,
+		items: make([]msgWithSync, 0),
+		name:  name,
 	}
 }

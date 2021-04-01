@@ -7,4 +7,5 @@ import (
 type Space interface {
 	AddQueue(string)
 	Publish(string, msg.Msg)
+	Subscribe(string, msg.Callback)
 }

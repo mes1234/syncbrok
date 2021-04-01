@@ -20,6 +20,10 @@ func (s SimpleSpace) Publish(queueName string, m msg.Msg) {
 	s.queues[queueName].AddMsg(m)
 }
 
+func (s SimpleSpace) Subscribe(queueName string, callback msg.Callback) {
+	s.queues[queueName].AddCallback(callback)
+}
+
 func New() Space {
 	return SimpleSpace{
 		queues: make(map[string]queue.Queue),
