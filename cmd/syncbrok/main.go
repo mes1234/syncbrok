@@ -20,8 +20,7 @@ func main() {
 	universe, newMsgCh, newQueuesCh, newSubscribersCh := space.New()
 	go universe.Start()
 
-	handler := frontend.HttpListner(handleMessage, universe, newMsgCh, newQueuesCh, newSubscribersCh)
-	go handler()
+	go frontend.HttpNewMsgListner(handleMessage, universe, newMsgCh, newQueuesCh, newSubscribersCh)()
 	for {
 		time.Sleep(1 * time.Hour)
 	}

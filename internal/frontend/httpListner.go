@@ -11,7 +11,7 @@ import (
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func HttpListner(
+func HttpNewMsgListner(
 	handler msg.Callback,
 	s space.Space,
 	newMsgCh chan<- space.Messages,
@@ -25,22 +25,41 @@ func HttpListner(
 		QName:   queueName,
 		Handler: handler,
 	}
-	homePage := CreateEndpoint(s, queueName, newMsgCh)
+	homePage := CreateNewMsgEndpoint(s, queueName, newMsgCh)
 	return func() {
 		http.HandleFunc("/", homePage)
 		log.Fatal(http.ListenAndServe(":10000", nil))
 	}
 }
-func CreateEndpoint(s space.Space, queueName string, newMsgCh chan<- space.Messages) func(http.ResponseWriter, *http.Request) {
+func CreateNewMsgEndpoint(
+	s space.Space,
+	queueName string,
+	newMsgCh chan<- space.Messages) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		body, _ := ioutil.ReadAll(r.Body)
+		parentId := ParseParentId(r)
 		newMsg := space.Messages{
 			QName:   queueName,
-			Content: msg.NewSimpleMsg(uuid.Nil, body),
+			Content: msg.NewSimpleMsg(parentId, body),
 		}
 		newMsgCh <- newMsg
-		fmt.Fprintf(w, "Welcome to the HomePage! %v", newMsg.Content.GetId())
-		fmt.Println("Endpoint Hit: homePage")
+		fmt.Fprintf(w, "You posted new Msg with id : %v", newMsg.Content.GetId())
+		fmt.Println("New msg arrived")
+	}
+}
+
+func ParseParentId(r *http.Request) uuid.UUID {
+	parentIdStr := r.Header.Get("ParentId")
+	if parentIdStr == "" {
+		return uuid.Nil
+	} else {
+		parentId, err := uuid.Parse(parentIdStr)
+		if err != nil {
+			return uuid.Nil
+		} else {
+			return parentId
+		}
 	}
 }
