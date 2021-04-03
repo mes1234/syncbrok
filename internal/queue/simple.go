@@ -29,7 +29,7 @@ func (q SimpleQueue) FindById(id uuid.UUID) (msg.Msg, *sync.WaitGroup) {
 }
 
 //Add item to end of queue
-func (q *SimpleQueue) AddMsg(m msg.Msg) uuid.UUID {
+func (q *SimpleQueue) AddMsg(m msg.Msg) {
 	parentId := m.GetParentId()
 	var wgParent *sync.WaitGroup = nil
 	if parentId != uuid.Nil {
@@ -44,7 +44,6 @@ func (q *SimpleQueue) AddMsg(m msg.Msg) uuid.UUID {
 	q.items = append(q.items, newItem)
 	log.Print("Added item to  queue :", q.name)
 	go m.Process(wgParent, &wgSelf, q.subscribers)
-	return m.GetId()
 }
 
 func (q *SimpleQueue) AddCallback(callback msg.Callback) {
