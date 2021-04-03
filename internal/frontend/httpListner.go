@@ -11,12 +11,20 @@ import (
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func HttpListner(s space.Space, handler msg.Callback, newMsgCh chan<- space.Messages, newQueuCh chan<- space.Queues) func() {
+func HttpListner(
+	handler msg.Callback,
+	s space.Space,
+	newMsgCh chan<- space.Messages,
+	newQueueCh chan<- space.Queues,
+	newSubscribersCh chan<- space.Subscribers) func() {
 	queueName := "simpleQueue"
-	newQueuCh <- space.Queues{
+	newQueueCh <- space.Queues{
 		QName: queueName,
 	}
-	s.Subscribe(queueName, handler)
+	newSubscribersCh <- space.Subscribers{
+		QName:   queueName,
+		Handler: handler,
+	}
 	homePage := CreateEndpoint(s, queueName, newMsgCh)
 	return func() {
 		http.HandleFunc("/", homePage)

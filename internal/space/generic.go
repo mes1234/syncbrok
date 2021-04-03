@@ -13,6 +13,11 @@ type Queues struct {
 	QName string
 }
 
+type Subscribers struct {
+	QName   string
+	Handler msg.Callback
+}
+
 type Space interface {
 	Start()
 	addQueue(string)

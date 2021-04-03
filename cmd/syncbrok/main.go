@@ -17,9 +17,12 @@ func handleMessage(content []byte) bool {
 func main() {
 
 	// Begining of life
-	universe, newMsgCh, newQueuesCh := space.New()
+	universe, newMsgCh, newQueuesCh, newSubscribersCh := space.New()
+	go universe.Start()
 
-	handler := frontend.HttpListner(universe, handleMessage, newMsgCh, newQueuesCh)
-	handler()
-	time.Sleep(10 * time.Second)
+	handler := frontend.HttpListner(handleMessage, universe, newMsgCh, newQueuesCh, newSubscribersCh)
+	go handler()
+	for {
+		time.Sleep(1 * time.Hour)
+	}
 }
