@@ -30,17 +30,27 @@ func (s SimpleSpace) Start() {
 	}
 }
 
-func (s SimpleSpace) addQueue(name string) {
-	log.Print("Added new queue ", name)
-	s.queues[name] = queue.NewSimpleQueue(name)
+func (s SimpleSpace) addQueue(queueName string) {
+
+	if _, ok := s.queues[queueName]; !ok {
+		s.queues[queueName] = queue.NewSimpleQueue(queueName)
+		log.Print("Added new queue ", queueName)
+	}
 }
 
 func (s SimpleSpace) publish(queueName string, m msg.Msg) {
-	s.queues[queueName].AddMsg(m)
+	if _, ok := s.queues[queueName]; ok {
+		s.queues[queueName].AddMsg(m)
+		log.Printf("Added new msg to queue %v, with id %v ", queueName, m.GetId())
+	}
 }
 
 func (s SimpleSpace) subscribe(queueName string, callback msg.Callback) {
-	s.queues[queueName].AddCallback(callback)
+	if _, ok := s.queues[queueName]; ok {
+		s.queues[queueName].AddCallback(callback)
+		log.Printf("Added new msg handler to queue %v ", queueName)
+	}
+
 }
 
 func New() (Space, chan<- Messages, chan<- Queues, chan<- Subscribers) {

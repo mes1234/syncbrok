@@ -13,27 +13,24 @@ import (
 
 func HttpNewMsgController(
 	handler msg.Callback,
-	s space.Space,
 	newMsgCh chan<- space.Messages,
-	newSubscribersCh chan<- space.Subscribers) func() {
+	newSubscribersCh chan<- space.Subscribers) {
 	queueName := "simpleQueue"
 	newSubscribersCh <- space.Subscribers{
 		QName:   queueName,
 		Handler: handler,
 	}
-	msgHandler := createNewMsgEndpoint(s, queueName, newMsgCh)
-	return func() {
-		http.HandleFunc("/", msgHandler)
-		log.Fatal(http.ListenAndServe(":10000", nil))
-	}
+	msgHandler := createNewMsgEndpoint(newMsgCh)
+	http.HandleFunc("/msg", msgHandler)
 }
 
-func HttpNewQueueController(newQueueCh chan<- space.Queues) func() {
+func HttpNewQueueController(newQueueCh chan<- space.Queues) {
 	queueHandler := createNewQueueEndpoint(newQueueCh)
-	return func() {
-		http.HandleFunc("/", queueHandler)
-		log.Fatal(http.ListenAndServe(":10001", nil))
-	}
+	http.HandleFunc("/queue", queueHandler)
+}
+
+func HttpStart() {
+	log.Fatal(http.ListenAndServe(":10000", nil))
 }
 
 func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWriter, *http.Request) {
@@ -53,15 +50,13 @@ func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWr
 	}
 }
 
-func createNewMsgEndpoint(
-	s space.Space,
-	queueName string,
-	newMsgCh chan<- space.Messages) func(http.ResponseWriter, *http.Request) {
+func createNewMsgEndpoint(newMsgCh chan<- space.Messages) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		body, _ := ioutil.ReadAll(r.Body)
 		parentId := parseParentId(r)
+		queueName := parseQueueName(r)
 		newMsg := space.Messages{
 			QName:   queueName,
 			Content: msg.NewSimpleMsg(parentId, body),

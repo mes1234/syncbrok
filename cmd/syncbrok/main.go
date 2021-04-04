@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"time"
 
 	"github.com/mes1234/syncbrok/internal/frontend"
 
@@ -20,9 +19,8 @@ func main() {
 	universe, newMsgCh, newQueuesCh, newSubscribersCh := space.New()
 	go universe.Start()
 
-	go frontend.HttpNewMsgController(handleMessage, universe, newMsgCh, newSubscribersCh)()
-	go frontend.HttpNewQueueController(newQueuesCh)()
-	for {
-		time.Sleep(1 * time.Hour)
-	}
+	frontend.HttpNewMsgController(handleMessage, newMsgCh, newSubscribersCh)
+	frontend.HttpNewQueueController(newQueuesCh)
+	frontend.HttpStart()
+
 }
