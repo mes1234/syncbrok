@@ -11,27 +11,49 @@ import (
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func HttpNewMsgListner(
+func HttpNewMsgController(
 	handler msg.Callback,
 	s space.Space,
 	newMsgCh chan<- space.Messages,
-	newQueueCh chan<- space.Queues,
 	newSubscribersCh chan<- space.Subscribers) func() {
 	queueName := "simpleQueue"
-	newQueueCh <- space.Queues{
-		QName: queueName,
-	}
 	newSubscribersCh <- space.Subscribers{
 		QName:   queueName,
 		Handler: handler,
 	}
-	homePage := CreateNewMsgEndpoint(s, queueName, newMsgCh)
+	msgHandler := createNewMsgEndpoint(s, queueName, newMsgCh)
 	return func() {
-		http.HandleFunc("/", homePage)
+		http.HandleFunc("/", msgHandler)
 		log.Fatal(http.ListenAndServe(":10000", nil))
 	}
 }
-func CreateNewMsgEndpoint(
+
+func HttpNewQueueController(newQueueCh chan<- space.Queues) func() {
+	queueHandler := createNewQueueEndpoint(newQueueCh)
+	return func() {
+		http.HandleFunc("/", queueHandler)
+		log.Fatal(http.ListenAndServe(":10001", nil))
+	}
+}
+
+func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		queueName := parseQueueName(r)
+		if queueName == "" {
+			log.Printf("New queue requested but no name provided")
+			fmt.Fprintf(w, "You posted empty queue name, queue name shall be provided")
+			return
+		}
+		newQueue := space.Queues{
+			QName: queueName,
+		}
+		newQueueCh <- newQueue
+		fmt.Fprintf(w, "You posted new queue with name : %v", queueName)
+		log.Printf("New queue request arrived")
+	}
+}
+
+func createNewMsgEndpoint(
 	s space.Space,
 	queueName string,
 	newMsgCh chan<- space.Messages) func(http.ResponseWriter, *http.Request) {
@@ -39,18 +61,27 @@ func CreateNewMsgEndpoint(
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		body, _ := ioutil.ReadAll(r.Body)
-		parentId := ParseParentId(r)
+		parentId := parseParentId(r)
 		newMsg := space.Messages{
 			QName:   queueName,
 			Content: msg.NewSimpleMsg(parentId, body),
 		}
 		newMsgCh <- newMsg
 		fmt.Fprintf(w, "You posted new Msg with id : %v", newMsg.Content.GetId())
-		fmt.Println("New msg arrived")
+		log.Printf("New msg arrived")
 	}
 }
 
-func ParseParentId(r *http.Request) uuid.UUID {
+func parseQueueName(r *http.Request) string {
+	queueName := r.Header.Get("queue")
+	if queueName == "" {
+		return ""
+	} else {
+		return queueName
+	}
+}
+
+func parseParentId(r *http.Request) uuid.UUID {
 	parentIdStr := r.Header.Get("ParentId")
 	if parentIdStr == "" {
 		return uuid.Nil
