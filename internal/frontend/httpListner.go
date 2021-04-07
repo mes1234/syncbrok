@@ -12,16 +12,19 @@ import (
 )
 
 func HttpNewMsgController(
-	handler msg.Callback,
+
 	newMsgCh chan<- space.Messages,
-	newSubscribersCh chan<- space.Subscribers) {
-	queueName := "simpleQueue"
-	newSubscribersCh <- space.Subscribers{
-		QName:   queueName,
-		Handler: handler,
-	}
+) {
+
 	msgHandler := createNewMsgEndpoint(newMsgCh)
 	http.HandleFunc("/msg", msgHandler)
+}
+
+func HttpNewSubscriberController(
+	handler msg.Callback,
+	newSubscribersCh chan<- space.Subscribers) {
+	subscriberHandler := createNewSubscriberEndpoint(newSubscribersCh, handler)
+	http.HandleFunc("/subscrib", subscriberHandler)
 }
 
 func HttpNewQueueController(newQueueCh chan<- space.Queues) {
@@ -31,6 +34,20 @@ func HttpNewQueueController(newQueueCh chan<- space.Queues) {
 
 func HttpStart() {
 	log.Fatal(http.ListenAndServe(":10000", nil))
+}
+
+func createNewSubscriberEndpoint(newSubscribersCh chan<- space.Subscribers, handler msg.Callback) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		queueName := parseQueueName(r)
+		endpointName := parseEndpointName(r)
+		newSubscribersCh <- space.Subscribers{
+			QName:    queueName,
+			Handler:  handler,
+			Endpoint: endpointName,
+		}
+		fmt.Fprintf(w, "You posted new subscriber for queue  : %v", queueName)
+		log.Printf("New subscriber request arrived")
+	}
 }
 
 func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWriter, *http.Request) {
@@ -73,6 +90,15 @@ func parseQueueName(r *http.Request) string {
 		return ""
 	} else {
 		return queueName
+	}
+}
+
+func parseEndpointName(r *http.Request) string {
+	endpointName := r.Header.Get("endpoint")
+	if endpointName == "" {
+		return ""
+	} else {
+		return endpointName
 	}
 }
 

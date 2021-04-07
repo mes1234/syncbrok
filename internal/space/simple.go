@@ -23,7 +23,7 @@ func (s SimpleSpace) Start() {
 		case newQueue := <-s.newQueues:
 			s.addQueue(newQueue.QName)
 		case newSubcriber := <-s.newSubscribers:
-			s.subscribe(newSubcriber.QName, newSubcriber.Handler)
+			s.subscribe(newSubcriber.QName, newSubcriber.Handler, newSubcriber.Endpoint)
 		default:
 			time.Sleep(1000)
 		}
@@ -45,9 +45,9 @@ func (s SimpleSpace) publish(queueName string, m msg.Msg) {
 	}
 }
 
-func (s SimpleSpace) subscribe(queueName string, callback msg.Callback) {
+func (s SimpleSpace) subscribe(queueName string, callback msg.Callback, endpoint string) {
 	if _, ok := s.queues[queueName]; ok {
-		s.queues[queueName].AddCallback(callback)
+		s.queues[queueName].AddCallback(callback, endpoint)
 		log.Printf("Added new msg handler to queue %v ", queueName)
 	}
 

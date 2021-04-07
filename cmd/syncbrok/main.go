@@ -8,7 +8,7 @@ import (
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func handleMessage(content []byte) bool {
+func handleMessage(content []byte, endpoint string) bool {
 	log.Print("This message content: ", string(content))
 	return true
 }
@@ -19,7 +19,8 @@ func main() {
 	universe, newMsgCh, newQueuesCh, newSubscribersCh := space.New()
 	go universe.Start()
 
-	frontend.HttpNewMsgController(handleMessage, newMsgCh, newSubscribersCh)
+	frontend.HttpNewMsgController(newMsgCh)
+	frontend.HttpNewSubscriberController(handleMessage, newSubscribersCh)
 	frontend.HttpNewQueueController(newQueuesCh)
 	frontend.HttpStart()
 

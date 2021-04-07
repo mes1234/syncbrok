@@ -14,6 +14,7 @@ type simpleMsg struct {
 	parent          uuid.UUID
 	content         []byte
 	deliveryCounter int
+	endpoints       []string
 }
 
 func (m simpleMsg) GetItems() interface{} {
@@ -28,7 +29,7 @@ func (m simpleMsg) GetParentId() uuid.UUID {
 	return m.parent
 }
 
-func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup, callbacks []Callback) {
+func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup, callback Callback, endpoints []string) {
 	defer wgSelf.Done()
 	log.Print("processing begins")
 	if m.parent != uuid.Nil {
@@ -39,8 +40,8 @@ func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup, cal
 		log.Print("I dont have parent let me do my job")
 		time.Sleep(20 * time.Second)
 	}
-	for _, callback := range callbacks {
-		callback(m.content)
+	for _, endpoint := range endpoints {
+		callback(m.content, endpoint)
 	}
 
 }

@@ -10,5 +10,5 @@ import (
 type Queue interface {
 	AddMsg(msg.Msg)
 	FindById(uuid.UUID) (msg.Msg, *sync.WaitGroup)
-	AddCallback(msg.Callback)
+	AddCallback(msg.Callback, string)
 }

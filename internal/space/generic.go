@@ -14,13 +14,14 @@ type Queues struct {
 }
 
 type Subscribers struct {
-	QName   string
-	Handler msg.Callback
+	QName    string
+	Handler  msg.Callback
+	Endpoint string
 }
 
 type Space interface {
 	Start()
 	addQueue(string)
 	publish(string, msg.Msg)
-	subscribe(string, msg.Callback)
+	subscribe(string, msg.Callback, string)
 }

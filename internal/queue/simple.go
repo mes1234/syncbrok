@@ -16,7 +16,8 @@ type msgWithSync struct {
 type SimpleQueue struct {
 	items       []msgWithSync
 	name        string
-	subscribers []msg.Callback
+	subscribers []string
+	handler     msg.Callback
 }
 
 func (q SimpleQueue) FindById(id uuid.UUID) (msg.Msg, *sync.WaitGroup) {
@@ -43,11 +44,12 @@ func (q *SimpleQueue) AddMsg(m msg.Msg) {
 	}
 	q.items = append(q.items, newItem)
 	log.Print("Added item to  queue :", q.name)
-	go m.Process(wgParent, &wgSelf, q.subscribers)
+	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers)
 }
 
-func (q *SimpleQueue) AddCallback(callback msg.Callback) {
-	q.subscribers = append(q.subscribers, callback)
+func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
+	q.subscribers = append(q.subscribers, endpoint)
+	q.handler = callback
 }
 
 func NewSimpleQueue(name string) Queue {
