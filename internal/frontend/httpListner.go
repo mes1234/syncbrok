@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,28 +12,31 @@ import (
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func HttpNewMsgController(
-
-	newMsgCh chan<- space.Messages,
-) {
-
+func httpNewMsgController(newMsgCh chan<- space.Messages) {
 	msgHandler := createNewMsgEndpoint(newMsgCh)
 	http.HandleFunc("/msg", msgHandler)
 }
 
-func HttpNewSubscriberController(
+func httpNewSubscriberController(
 	handler msg.Callback,
 	newSubscribersCh chan<- space.Subscribers) {
 	subscriberHandler := createNewSubscriberEndpoint(newSubscribersCh, handler)
 	http.HandleFunc("/subscrib", subscriberHandler)
 }
 
-func HttpNewQueueController(newQueueCh chan<- space.Queues) {
+func httpNewQueueController(newQueueCh chan<- space.Queues) {
 	queueHandler := createNewQueueEndpoint(newQueueCh)
 	http.HandleFunc("/queue", queueHandler)
 }
 
-func HttpStart() {
+func HttpStart(
+	newMsgCh chan<- space.Messages,
+	newSubscribersCh chan<- space.Subscribers,
+	newQueueCh chan<- space.Queues,
+	handler msg.Callback) {
+	httpNewMsgController(newMsgCh)
+	httpNewSubscriberController(handler, newSubscribersCh)
+	httpNewQueueController(newQueueCh)
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
 
@@ -113,5 +117,26 @@ func parseParentId(r *http.Request) uuid.UUID {
 		} else {
 			return parentId
 		}
+	}
+}
+
+func HttphandleMessage(content []byte, endpoint string) bool {
+	bodyReq := bytes.NewBuffer(content)
+	resp, err := http.Post(endpoint, "application/json", bodyReq)
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+		return false
+	}
+	defer resp.Body.Close()
+	//Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	sb := string(body)
+	if sb == "true" {
+		return true
+	} else {
+		return false
 	}
 }

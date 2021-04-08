@@ -38,7 +38,7 @@ func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup, cal
 		log.Print("my parent completed I shall proceed")
 	} else {
 		log.Print("I dont have parent let me do my job")
-		time.Sleep(20 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 	for _, endpoint := range endpoints {
 		callback(m.content, endpoint)

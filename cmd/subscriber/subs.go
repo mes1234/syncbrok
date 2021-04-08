@@ -8,9 +8,14 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	body, _ := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "false")
+		return
+	}
 	fmt.Fprintf(w, "true")
-	log.Printf("New msg arrived %v", body)
+	log.Printf("New msg arrived %v", string(body))
+
 }
 
 func main() {
