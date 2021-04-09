@@ -6,6 +6,7 @@ import (
 
 	"github.com/mes1234/syncbrok/internal/msg"
 	"github.com/mes1234/syncbrok/internal/queue"
+	"github.com/mes1234/syncbrok/internal/storage"
 )
 
 type SimpleSpace struct {
@@ -33,7 +34,10 @@ func (s SimpleSpace) Start() {
 func (s SimpleSpace) addQueue(queueName string) {
 
 	if _, ok := s.queues[queueName]; !ok {
-		s.queues[queueName] = queue.NewSimpleQueue(queueName)
+		store := storage.NewFileWriter()
+		storeCh := store.CreateQueue(queueName)
+		go store.Start()
+		s.queues[queueName] = queue.NewSimpleQueue(queueName, storeCh)
 		log.Print("Added new queue ", queueName)
 	}
 }

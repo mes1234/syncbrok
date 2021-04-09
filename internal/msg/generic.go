@@ -13,4 +13,5 @@ type Msg interface {
 	GetId() uuid.UUID
 	GetParentId() uuid.UUID
 	Process(*sync.WaitGroup, *sync.WaitGroup, Callback, []string)
+	GetContent() []byte
 }

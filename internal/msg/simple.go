@@ -29,6 +29,10 @@ func (m simpleMsg) GetParentId() uuid.UUID {
 	return m.parent
 }
 
+func (m simpleMsg) GetContent() []byte {
+	return m.content
+}
+
 func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup, callback Callback, endpoints []string) {
 	defer wgSelf.Done()
 	log.Print("processing begins")
