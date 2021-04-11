@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
+	"github.com/mes1234/syncbrok/internal/storage"
 )
 
 type msgWithSync struct {
@@ -19,6 +20,7 @@ type SimpleQueue struct {
 	subscribers []string
 	handler     msg.Callback
 	storage     chan<- msg.Msg
+	storeReader storage.FileReader
 }
 
 func (q SimpleQueue) FindById(id uuid.UUID) (msg.Msg, *sync.WaitGroup) {
@@ -44,9 +46,10 @@ func (q *SimpleQueue) AddMsg(m msg.Msg) {
 		wg:   &wgSelf,
 	}
 	q.storage <- m
+	m.RemoveContent()
 	q.items = append(q.items, newItem)
 	log.Print("Added item to  queue :", q.name)
-	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers)
+	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers, q.storeReader)
 }
 
 func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
@@ -54,10 +57,11 @@ func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
 	q.handler = callback
 }
 
-func NewSimpleQueue(name string, storage chan<- msg.Msg) Queue {
+func NewSimpleQueue(name string, storage chan<- msg.Msg, storeReader storage.FileReader) Queue {
 	return &SimpleQueue{
-		items:   make([]msgWithSync, 0),
-		name:    name,
-		storage: storage,
+		items:       make([]msgWithSync, 0),
+		name:        name,
+		storage:     storage,
+		storeReader: storeReader,
 	}
 }

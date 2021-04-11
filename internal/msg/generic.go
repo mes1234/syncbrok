@@ -12,6 +12,7 @@ type Msg interface {
 	GetItems() interface{}
 	GetId() uuid.UUID
 	GetParentId() uuid.UUID
-	Process(*sync.WaitGroup, *sync.WaitGroup, Callback, []string)
+	Process(*sync.WaitGroup, *sync.WaitGroup, Callback, []string, func(uuid.UUID) []byte)
 	GetContent() []byte
+	RemoveContent()
 }

@@ -31,13 +31,13 @@ func (s SimpleSpace) Start() {
 	}
 }
 
-func (s SimpleSpace) addQueue(queueName string) {
+func (s *SimpleSpace) addQueue(queueName string) {
 
 	if _, ok := s.queues[queueName]; !ok {
 		store := storage.NewFileWriter()
-		storeCh := store.CreateQueue(queueName)
+		storeCh, storeReader := store.CreateQueue(queueName)
 		go store.Start()
-		s.queues[queueName] = queue.NewSimpleQueue(queueName, storeCh)
+		s.queues[queueName] = queue.NewSimpleQueue(queueName, storeCh, storeReader)
 		log.Print("Added new queue ", queueName)
 	}
 }
@@ -61,7 +61,7 @@ func New() (Space, chan<- Messages, chan<- Queues, chan<- Subscribers) {
 	newMessagesCh := make(chan Messages)
 	newQueuesCh := make(chan Queues)
 	newSubscribersCh := make(chan Subscribers)
-	simpleSpace := SimpleSpace{
+	simpleSpace := &SimpleSpace{
 		queues:         make(map[string]queue.Queue),
 		newMessages:    newMessagesCh,
 		newQueues:      newQueuesCh,

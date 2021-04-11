@@ -5,6 +5,6 @@ import (
 )
 
 type StorageWriter interface {
-	CreateQueue(string) chan<- msg.Msg
+	CreateQueue(string) (chan<- msg.Msg, FileReader)
 	Start()
 }
