@@ -69,9 +69,12 @@ func prepareReader(file *os.File, msgLocation map[uuid.UUID]MsgSave) FileReader 
 		if err != nil {
 			panic(err)
 		}
-		offset := msgLocation[u]
+		offset := (msgLocation[u])
 		buf := make([]byte, offset.len)
+
 		f.ReadAt(buf, int64(offset.len))
+		strBuf := string(buf)
+		log.Print("will send", strBuf)
 		return buf
 	}
 

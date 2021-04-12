@@ -15,10 +15,6 @@ type simpleMsg struct {
 	content []byte
 }
 
-func (m simpleMsg) GetItems() interface{} {
-	return m.content
-}
-
 func (m simpleMsg) GetId() uuid.UUID {
 	return m.id
 }
@@ -49,7 +45,7 @@ func (m simpleMsg) Process(
 		log.Print("my parent completed I shall proceed")
 	} else {
 		log.Print("I dont have parent let me do my job")
-		time.Sleep(2 * time.Second)
+		time.Sleep(20 * time.Second)
 	}
 	m.content = store(m.GetId())
 	for _, endpoint := range endpoints {

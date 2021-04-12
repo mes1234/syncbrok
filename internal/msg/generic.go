@@ -9,7 +9,6 @@ import (
 type Callback func([]byte, string) bool
 
 type Msg interface {
-	GetItems() interface{}
 	GetId() uuid.UUID
 	GetParentId() uuid.UUID
 	Process(*sync.WaitGroup, *sync.WaitGroup, Callback, []string, func(uuid.UUID) []byte)
