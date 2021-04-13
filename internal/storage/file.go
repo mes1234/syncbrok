@@ -65,14 +65,16 @@ func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, re
 func prepareReader(file *os.File, msgLocation map[uuid.UUID]MsgSave) FileReader {
 	fname := file.Name()
 	return func(u uuid.UUID) []byte {
+		log.Printf("attempt to retrieve content of %v", u)
 		f, err := os.Open(fname)
 		if err != nil {
 			panic(err)
 		}
+		defer f.Close()
 		offset := (msgLocation[u])
 		buf := make([]byte, offset.len)
 
-		f.ReadAt(buf, int64(offset.len))
+		f.ReadAt(buf, int64(offset.startOffset))
 		strBuf := string(buf)
 		log.Print("will send", strBuf)
 		return buf

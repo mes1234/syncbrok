@@ -83,7 +83,7 @@ func createNewMsgEndpoint(newMsgCh chan<- space.Messages) func(http.ResponseWrit
 			Content: msg.NewSimpleMsg(parentId, body),
 		}
 		newMsgCh <- newMsg
-		fmt.Fprintf(w, "You posted new Msg with id : %v", newMsg.Content.GetId())
+		fmt.Fprintf(w, "%v", newMsg.Content.GetId())
 		log.Printf("New msg arrived")
 	}
 }

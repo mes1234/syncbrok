@@ -1,34 +1,34 @@
 package msg
 
 import (
+	"encoding/json"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 //Message is an entity passed between channels
 type simpleMsg struct {
-	id      uuid.UUID
-	parent  uuid.UUID
-	content []byte
+	Id      uuid.UUID `json:"id"`
+	Parent  uuid.UUID `json:"parent"`
+	Content []byte    `json:"content"`
 }
 
 func (m simpleMsg) GetId() uuid.UUID {
-	return m.id
+	return m.Id
 }
 
 func (m *simpleMsg) RemoveContent() {
-	m.content = nil
+	m.Content = nil
 }
 
 func (m simpleMsg) GetParentId() uuid.UUID {
-	return m.parent
+	return m.Parent
 }
 
 func (m simpleMsg) GetContent() []byte {
-	return m.content
+	return m.Content
 }
 
 func (m simpleMsg) Process(
@@ -39,17 +39,17 @@ func (m simpleMsg) Process(
 	store func(uuid.UUID) []byte) {
 	defer wgSelf.Done()
 	log.Print("processing begins")
-	if m.parent != uuid.Nil {
+	if m.Parent != uuid.Nil {
 		log.Print("I will wait for my parent to finish")
 		wgParent.Wait()
 		log.Print("my parent completed I shall proceed")
 	} else {
 		log.Print("I dont have parent let me do my job")
-		time.Sleep(20 * time.Second)
 	}
-	m.content = store(m.GetId())
+	m.Content = store(m.GetId())
+	response, _ := json.Marshal(m)
 	for _, endpoint := range endpoints {
-		callback(m.content, endpoint)
+		callback(response, endpoint)
 	}
 
 }
@@ -58,8 +58,8 @@ func (m simpleMsg) Process(
 //automatically assing global uniq uuid
 func NewSimpleMsg(parentId uuid.UUID, content []byte) Msg {
 	return &simpleMsg{
-		id:      uuid.New(),
-		parent:  parentId,
-		content: content,
+		Id:      uuid.New(),
+		Parent:  parentId,
+		Content: content,
 	}
 }
