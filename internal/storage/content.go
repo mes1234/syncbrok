@@ -2,6 +2,8 @@ package storage
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/gob"
 	"log"
 	"os"
 	"time"
@@ -11,16 +13,22 @@ import (
 )
 
 type MsgSave struct {
-	startOffset int64
-	len         int
+	StartOffset int64
+	Len         int
+	Id          uuid.UUID
+	Parent      uuid.UUID
 }
 
 type FileWriter struct {
-	path     string
-	file     *bufio.Writer
-	offset   int64
-	addMsgCh <-chan msg.Msg
-	lookup   map[uuid.UUID]MsgSave
+	path        string
+	fileContent *bufio.Writer
+	fileIndex   *bufio.Writer
+	offset      int64
+	addMsgCh    <-chan msg.Msg
+	lookup      map[uuid.UUID]MsgSave
+	buffer      bytes.Buffer
+	encoder     *gob.Encoder
+	decoder     *gob.Decoder
 }
 
 type FileReader func(uuid.UUID) []byte
@@ -39,26 +47,45 @@ func (fw FileWriter) Start() {
 
 func (fw *FileWriter) addToStore(m msg.Msg) {
 	content := m.GetContent()
-	fw.lookup[m.GetId()] = MsgSave{
-		startOffset: fw.offset,
-		len:         len(content),
+	msg := MsgSave{
+		StartOffset: fw.offset,
+		Len:         len(content),
+		Id:          m.GetId(),
+		Parent:      m.GetParentId(),
 	}
+	fw.lookup[m.GetId()] = msg
+	var indexBuffer bytes.Buffer
+	encoder := gob.NewEncoder(&indexBuffer)
+	err := encoder.Encode(msg)
+	if err != nil {
+		log.Fatal("encode error:", err)
+	}
+	log.Printf("bytes %v", indexBuffer.Bytes())
+	fw.fileIndex.Write(indexBuffer.Bytes())
+	fw.fileIndex.Flush()
+
 	fw.offset = fw.offset + int64(len(content))
-	fw.file.Write(content)
-	fw.file.Flush()
+	fw.fileContent.Write(content)
+	fw.fileContent.Flush()
 }
 
 func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, reader FileReader) {
-	file, err := os.Create(fw.path + queueName)
+	fileContent, err := os.Create(fw.path + queueName)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
-	fw.file = bufio.NewWriter(file)
+	fileIndex, err := os.Create(fw.path + queueName + "_id")
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	fw.fileContent = bufio.NewWriter(fileContent)
+	fw.fileIndex = bufio.NewWriter(fileIndex)
 	ch := make(chan msg.Msg)
 	addMsgCh = ch
 	fw.addMsgCh = ch
-	reader = prepareReader(file, fw.lookup)
+	reader = prepareReader(fileContent, fw.lookup)
 	return
 }
 
@@ -72,17 +99,17 @@ func prepareReader(file *os.File, msgLocation map[uuid.UUID]MsgSave) FileReader 
 		}
 		defer f.Close()
 		offset := (msgLocation[u])
-		buf := make([]byte, offset.len)
+		buf := make([]byte, offset.Len)
 
-		f.ReadAt(buf, int64(offset.startOffset))
+		f.ReadAt(buf, int64(offset.StartOffset))
 		strBuf := string(buf)
 		log.Print("will send", strBuf)
 		return buf
 	}
-
 }
 
 func NewFileWriter() StorageWriter {
+
 	return &FileWriter{
 		lookup: make(map[uuid.UUID]MsgSave),
 		path:   "C:\\Users\\witol\\go\\syncbrok\\temp\\",
