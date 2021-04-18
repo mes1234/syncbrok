@@ -25,5 +25,5 @@ type Space interface {
 	Start(*sync.WaitGroup)
 	addQueue(string)
 	publish(string, msg.Msg)
-	subscribe(string, msg.Callback, string)
+	subscribe(string, string)
 }

@@ -1,7 +1,6 @@
 package frontend
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,10 +17,8 @@ func httpNewMsgController(newMsgCh chan<- space.Messages) {
 	http.HandleFunc("/msg", msgHandler)
 }
 
-func httpNewSubscriberController(
-	handler msg.Callback,
-	newSubscribersCh chan<- space.Subscribers) {
-	subscriberHandler := createNewSubscriberEndpoint(newSubscribersCh, handler)
+func httpNewSubscriberController(newSubscribersCh chan<- space.Subscribers) {
+	subscriberHandler := createNewSubscriberEndpoint(newSubscribersCh)
 	http.HandleFunc("/subscrib", subscriberHandler)
 }
 
@@ -36,18 +33,17 @@ func HttpStart(
 	newSubscribersCh chan<- space.Subscribers,
 	newQueueCh chan<- space.Queues) {
 	httpNewMsgController(newMsgCh)
-	httpNewSubscriberController(HttphandleMessage, newSubscribersCh)
+	httpNewSubscriberController(newSubscribersCh)
 	httpNewQueueController(newQueueCh)
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
 
-func createNewSubscriberEndpoint(newSubscribersCh chan<- space.Subscribers, handler msg.Callback) func(http.ResponseWriter, *http.Request) {
+func createNewSubscriberEndpoint(newSubscribersCh chan<- space.Subscribers) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queueName := parseQueueName(r)
 		endpointName := parseEndpointName(r)
 		newSubscribersCh <- space.Subscribers{
 			QName:    queueName,
-			Handler:  handler,
 			Endpoint: endpointName,
 		}
 		fmt.Fprintf(w, "You posted new subscriber for queue  : %v", queueName)
@@ -118,26 +114,5 @@ func parseParentId(r *http.Request) uuid.UUID {
 		} else {
 			return parentId
 		}
-	}
-}
-
-func HttphandleMessage(content []byte, endpoint string) bool {
-	bodyReq := bytes.NewBuffer(content)
-	resp, err := http.Post(endpoint, "application/json", bodyReq)
-	if err != nil {
-		log.Fatalf("An Error Occured %v", err)
-		return false
-	}
-	defer resp.Body.Close()
-	//Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	sb := string(body)
-	if sb == "true" {
-		return true
-	} else {
-		return false
 	}
 }

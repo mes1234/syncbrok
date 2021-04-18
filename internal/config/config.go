@@ -2,24 +2,21 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/mes1234/syncbrok/internal/space"
 	"github.com/spf13/viper"
 )
 
-type HandlerConfig struct {
-	url    string `mapstructure:"url"`
-	queues string `mapstructure:"queues"`
-}
-
 type QueueConifg struct {
-	Handlers []string
+	Urls []string `yaml:"url"`
 }
 
 type Configuration struct {
-	Queues map[string]QueueConifg //Definition of queues
+	Queues           map[string]QueueConifg //Definition of queues
+	newMsgCh         chan<- space.Messages
+	newSubscribersCh chan<- space.Subscribers
+	newQueueCh       chan<- space.Queues
 }
 
 func Bootstrap(
@@ -36,31 +33,24 @@ func Bootstrap(
 	}
 
 	configuration := Configuration{
-		Queues: make(map[string]QueueConifg),
+		Queues:           make(map[string]QueueConifg),
+		newMsgCh:         newMsgCh,
+		newQueueCh:       newQueueCh,
+		newSubscribersCh: newSubscribersCh,
 	}
-	configuration.initQueues(newQueueCh)
-
-	configuration.initHandlers(newSubscribersCh)
+	configuration.initQueues()
 }
 
-func (c *Configuration) initHandlers(newSubscribersCh chan<- space.Subscribers) {
-	handlers := make(map[string]*HandlerConfig)
-	viper.UnmarshalKey("Handlers", &handlers)
-	for index, value := range handlers {
-		log.Printf("%v,%v", index, value)
-	}
-}
-
-func (c *Configuration) initQueues(newQueueCh chan<- space.Queues) {
-
-	queues := viper.GetStringSlice("Queues")
-
-	for _, value := range queues {
-		newQueue := QueueConifg{}
-		c.Queues[value] = newQueue
-		newQueueCh <- space.Queues{
-			QName: value,
+func (c *Configuration) initQueues() {
+	viper.Unmarshal(&c)
+	for queue, config := range c.Queues {
+		c.newQueueCh <- space.Queues{QName: queue}
+		for _, value := range config.Urls {
+			c.newSubscribersCh <- space.Subscribers{
+				QName:    queue,
+				Endpoint: value,
+			}
 		}
-	}
 
+	}
 }
