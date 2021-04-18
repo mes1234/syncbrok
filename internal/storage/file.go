@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bufio"
-	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -49,7 +48,7 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 }
 
 func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, reader FileReader) {
-	file, err := ioutil.TempFile("C:\\Users\\witol\\go\\syncbrok\\temp", queueName)
+	file, err := os.Create("C:\\Users\\witol\\go\\syncbrok\\temp" + queueName)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)

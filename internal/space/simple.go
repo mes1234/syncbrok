@@ -2,6 +2,7 @@ package space
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/mes1234/syncbrok/internal/msg"
@@ -16,7 +17,7 @@ type SimpleSpace struct {
 	newSubscribers <-chan Subscribers
 }
 
-func (s SimpleSpace) Start() {
+func (s SimpleSpace) Start(wg *sync.WaitGroup) {
 	for {
 		select {
 		case newMsg := <-s.newMessages:

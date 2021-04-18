@@ -1,0 +1,12 @@
+Queues: 
+  - simple
+  - test 
+  - whatever
+Handlers:
+  - simple :
+    - "http://localhost:10000/msg"
+    - "http://localhost:10001/msg"
+  - test 
+    - "http://localhost:10001/msg"
+  - whatever
+    - "http://localhost:10001/msg"

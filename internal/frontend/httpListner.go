@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
@@ -30,12 +31,12 @@ func httpNewQueueController(newQueueCh chan<- space.Queues) {
 }
 
 func HttpStart(
+	wg *sync.WaitGroup,
 	newMsgCh chan<- space.Messages,
 	newSubscribersCh chan<- space.Subscribers,
-	newQueueCh chan<- space.Queues,
-	handler msg.Callback) {
+	newQueueCh chan<- space.Queues) {
 	httpNewMsgController(newMsgCh)
-	httpNewSubscriberController(handler, newSubscribersCh)
+	httpNewSubscriberController(HttphandleMessage, newSubscribersCh)
 	httpNewQueueController(newQueueCh)
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }

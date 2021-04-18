@@ -1,6 +1,8 @@
 package space
 
 import (
+	"sync"
+
 	"github.com/mes1234/syncbrok/internal/msg"
 )
 
@@ -20,7 +22,7 @@ type Subscribers struct {
 }
 
 type Space interface {
-	Start()
+	Start(*sync.WaitGroup)
 	addQueue(string)
 	publish(string, msg.Msg)
 	subscribe(string, msg.Callback, string)
