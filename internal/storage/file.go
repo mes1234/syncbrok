@@ -16,6 +16,7 @@ type MsgSave struct {
 }
 
 type FileWriter struct {
+	path     string
 	file     *bufio.Writer
 	offset   int64
 	addMsgCh <-chan msg.Msg
@@ -48,7 +49,7 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 }
 
 func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, reader FileReader) {
-	file, err := os.Create("C:\\Users\\witol\\go\\syncbrok\\temp" + queueName)
+	file, err := os.Create(fw.path + queueName)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -84,5 +85,6 @@ func prepareReader(file *os.File, msgLocation map[uuid.UUID]MsgSave) FileReader 
 func NewFileWriter() StorageWriter {
 	return &FileWriter{
 		lookup: make(map[uuid.UUID]MsgSave),
+		path:   "C:\\Users\\witol\\go\\syncbrok\\temp\\",
 	}
 }
