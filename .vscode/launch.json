@@ -5,12 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch file",
+            "name": "Launch Package",
             "type": "go",
             "request": "launch",
-            "mode": "debug",
-            "program": "${file}"
+            "mode": "auto",
+            "program": "${workspaceFolder}\\cmd\\syncbrok\\main.go"
         }
-
     ]
 }

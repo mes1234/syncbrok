@@ -27,8 +27,6 @@ type FileWriter struct {
 	addMsgCh    <-chan msg.Msg
 	lookup      map[uuid.UUID]MsgSave
 	buffer      bytes.Buffer
-	encoder     *gob.Encoder
-	decoder     *gob.Decoder
 }
 
 type FileReader func(uuid.UUID) []byte
@@ -54,14 +52,14 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 		Parent:      m.GetParentId(),
 	}
 	fw.lookup[m.GetId()] = msg
-	var indexBuffer bytes.Buffer
-	encoder := gob.NewEncoder(&indexBuffer)
+	encoder := gob.NewEncoder(&fw.buffer)
 	err := encoder.Encode(msg)
 	if err != nil {
 		log.Fatal("encode error:", err)
 	}
-	log.Printf("bytes %v", indexBuffer.Bytes())
-	fw.fileIndex.Write(indexBuffer.Bytes())
+	log.Printf("bytes %v", fw.buffer.Bytes())
+	fw.fileIndex.Write(fw.buffer.Bytes())
+	fw.buffer.Reset()
 	fw.fileIndex.Flush()
 
 	fw.offset = fw.offset + int64(len(content))
@@ -109,9 +107,10 @@ func prepareReader(file *os.File, msgLocation map[uuid.UUID]MsgSave) FileReader 
 }
 
 func NewFileWriter() StorageWriter {
-
-	return &FileWriter{
+	fw := FileWriter{
 		lookup: make(map[uuid.UUID]MsgSave),
 		path:   "C:\\Users\\witol\\go\\syncbrok\\temp\\",
+		buffer: bytes.Buffer{},
 	}
+	return &fw
 }
