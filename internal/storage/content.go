@@ -3,6 +3,7 @@ package storage
 import (
 	"bufio"
 	"bytes"
+	"encoding/binary"
 	"encoding/gob"
 	"log"
 	"os"
@@ -22,7 +23,7 @@ type MsgSave struct {
 type FileWriter struct {
 	path        string
 	fileContent *bufio.Writer
-	fileIndex   *bufio.Writer
+	fileIndex   *bufio.ReadWriter
 	offset      int64
 	addMsgCh    <-chan msg.Msg
 	lookup      map[uuid.UUID]MsgSave
@@ -43,6 +44,58 @@ func (fw FileWriter) Start() {
 	}
 }
 
+func (fw *FileWriter) decodeMsgSave(buffer []byte) {
+	gobReader := bytes.NewReader(buffer)
+	decoder := gob.NewDecoder(gobReader)
+	newMsg := MsgSave{}
+	err := decoder.Decode(&newMsg)
+	if err != nil {
+		panic(err)
+	}
+	fw.lookup[newMsg.Id] = newMsg
+	fw.offset = fw.offset + int64(newMsg.Len)
+}
+
+func (fw *FileWriter) recoverMsges(queueName string) {
+
+	reader := bufio.NewReader(fw.fileIndex)
+	for {
+
+		buffer := make([]byte, binary.MaxVarintLen64)
+		binary.Read(reader, binary.LittleEndian, buffer)
+		count, err := binary.ReadUvarint(bytes.NewReader(buffer))
+		if err != nil || count == 0 {
+			break
+		}
+
+		buffer = make([]byte, count)
+		err = binary.Read(reader, binary.LittleEndian, buffer)
+		if err != nil {
+			break
+		}
+
+		fw.decodeMsgSave(buffer)
+
+	}
+}
+
+func getBytes(i int) []byte {
+	buf := make([]byte, binary.MaxVarintLen64)
+	binary.PutUvarint(buf, uint64(i))
+	return buf
+}
+
+func (fw *FileWriter) EncodeMsg(msg MsgSave) (bytes []byte) {
+	encoder := gob.NewEncoder(&fw.buffer)
+	err := encoder.Encode(msg)
+	if err != nil {
+		log.Fatal("encode error:", err)
+	}
+	bytes = fw.buffer.Bytes()
+	fw.buffer.Reset()
+	return
+}
+
 func (fw *FileWriter) addToStore(m msg.Msg) {
 	content := m.GetContent()
 	msg := MsgSave{
@@ -52,14 +105,11 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 		Parent:      m.GetParentId(),
 	}
 	fw.lookup[m.GetId()] = msg
-	encoder := gob.NewEncoder(&fw.buffer)
-	err := encoder.Encode(msg)
-	if err != nil {
-		log.Fatal("encode error:", err)
-	}
-	log.Printf("bytes %v", fw.buffer.Bytes())
-	fw.fileIndex.Write(fw.buffer.Bytes())
-	fw.buffer.Reset()
+
+	msgBytes := fw.EncodeMsg(msg)
+	fw.fileIndex.Write(getBytes(len(msgBytes))) // save size of gob
+	fw.fileIndex.Write(msgBytes)                //save gob
+
 	fw.fileIndex.Flush()
 
 	fw.offset = fw.offset + int64(len(content))
@@ -68,18 +118,22 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 }
 
 func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, reader FileReader) {
-	fileContent, err := os.Create(fw.path + queueName)
+	fileContent, err := os.OpenFile(fw.path+queueName, os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
-	fileIndex, err := os.Create(fw.path + queueName + "_id")
+
+	fileIndex, err := os.OpenFile(fw.path+queueName+"_id", os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
+
 	fw.fileContent = bufio.NewWriter(fileContent)
-	fw.fileIndex = bufio.NewWriter(fileIndex)
+	fw.fileIndex = bufio.NewReadWriter(bufio.NewReader(fileIndex), bufio.NewWriter(fileIndex))
+
+	fw.recoverMsges(queueName)
 	ch := make(chan msg.Msg)
 	addMsgCh = ch
 	fw.addMsgCh = ch
