@@ -8,6 +8,7 @@ import (
 
 type Callback func([]byte, string) bool
 
+//Msg is main entinty in system
 type Msg interface {
 	GetId() uuid.UUID
 	GetParentId() uuid.UUID
