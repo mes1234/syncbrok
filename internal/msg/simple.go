@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -36,7 +37,8 @@ func (m simpleMsg) Process(
 	wgSelf *sync.WaitGroup,
 	callback Callback,
 	endpoints []string,
-	store func(uuid.UUID) []byte) {
+	store func(uuid.UUID) []byte,
+	storeAck chan<- uuid.UUID) {
 	defer wgSelf.Done()
 	log.Print("processing begins")
 	if m.Parent != uuid.Nil {
@@ -48,8 +50,16 @@ func (m simpleMsg) Process(
 	}
 	m.Content = store(m.GetId())
 	response, _ := json.Marshal(m)
+	status := true
 	for _, endpoint := range endpoints {
-		callback(response, endpoint)
+		status = status && callback(response, endpoint)
+	}
+	if status {
+		storeAck <- m.Id
+	} else {
+		time.Sleep(3 * time.Second)
+		wgSelf.Add(1)
+		go m.Process(wgParent, wgSelf, callback, endpoints, store, storeAck)
 	}
 
 }

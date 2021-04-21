@@ -37,9 +37,9 @@ func (s *SimpleSpace) addQueue(queueName string) {
 
 	if _, ok := s.queues[queueName]; !ok {
 		store := storage.NewFileWriter()
-		storeCh, storeReader := store.CreateQueue(queueName)
+		storeCh, storeAckCh, storeReader := store.CreateQueue(queueName)
 		go store.Start()
-		s.queues[queueName] = queue.NewSimpleQueue(queueName, storeCh, storeReader)
+		s.queues[queueName] = queue.NewSimpleQueue(queueName, storeCh, storeAckCh, storeReader)
 		log.Print("Added new queue ", queueName)
 	}
 }

@@ -20,6 +20,7 @@ type SimpleQueue struct {
 	subscribers []string
 	handler     msg.Callback
 	storage     chan<- msg.Msg
+	storageAck  chan<- uuid.UUID
 	storeReader storage.FileReader
 }
 
@@ -49,7 +50,7 @@ func (q *SimpleQueue) AddMsg(m msg.Msg) {
 	m.RemoveContent()
 	q.items = append(q.items, newItem)
 	log.Print("Added item to  queue :", q.name)
-	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers, q.storeReader)
+	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers, q.storeReader, q.storageAck)
 }
 
 func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
@@ -57,11 +58,12 @@ func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
 	q.handler = callback
 }
 
-func NewSimpleQueue(name string, storage chan<- msg.Msg, storeReader storage.FileReader) Queue {
+func NewSimpleQueue(name string, storage chan<- msg.Msg, ackMessageCh chan<- uuid.UUID, storeReader storage.FileReader) Queue {
 	return &SimpleQueue{
 		items:       make([]msgWithSync, 0),
 		name:        name,
 		storage:     storage,
+		storageAck:  ackMessageCh,
 		storeReader: storeReader,
 	}
 }
