@@ -58,7 +58,7 @@ func (fw *FileWriter) decodeMsgSave(buffer []byte) {
 
 func (fw *FileWriter) recoverMsges(queueName string) {
 
-	reader := bufio.NewReader(fw.fileIndex)
+	reader := fw.fileIndex.Reader
 	for {
 
 		buffer := make([]byte, binary.MaxVarintLen64)
@@ -74,7 +74,7 @@ func (fw *FileWriter) recoverMsges(queueName string) {
 			break
 		}
 
-		fw.decodeMsgSave(buffer)
+		go fw.decodeMsgSave(buffer)
 
 	}
 }
