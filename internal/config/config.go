@@ -14,16 +14,16 @@ type QueueConifg struct {
 
 type Configuration struct {
 	Queues           map[string]QueueConifg //Definition of queues
-	newMsgCh         chan<- space.Messages
-	newSubscribersCh chan<- space.Subscribers
-	newQueueCh       chan<- space.Queues
+	newMsgCh         chan<- space.Message
+	newSubscribersCh chan<- space.Subscriber
+	newQueueCh       chan<- space.Queue
 }
 
 func Bootstrap(
 	wg *sync.WaitGroup,
-	newMsgCh chan<- space.Messages,
-	newSubscribersCh chan<- space.Subscribers,
-	newQueueCh chan<- space.Queues) {
+	newMsgCh chan<- space.Message,
+	newSubscribersCh chan<- space.Subscriber,
+	newQueueCh chan<- space.Queue) {
 	viper.SetConfigName("config") // name of config file (without extension)
 	viper.SetConfigType("yml")    // REQUIRED if the config file does not have the extension in the name
 	viper.AddConfigPath(".")      // optionally look for config in the working directory
@@ -44,9 +44,9 @@ func Bootstrap(
 func (c *Configuration) initQueues() {
 	viper.Unmarshal(&c)
 	for queue, config := range c.Queues {
-		c.newQueueCh <- space.Queues{QName: queue}
+		c.newQueueCh <- space.Queue{QName: queue}
 		for _, value := range config.Urls {
-			c.newSubscribersCh <- space.Subscribers{
+			c.newSubscribersCh <- space.Subscriber{
 				QName:    queue,
 				Endpoint: value,
 			}

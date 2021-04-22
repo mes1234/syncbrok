@@ -13,12 +13,3 @@ func TestNewSimpleMsgCreation(t *testing.T) {
 		t.Errorf("Gid shall be assigned for evey msg %v", got)
 	}
 }
-
-func TestCleaningContent(t *testing.T) {
-	content := []byte{0, 1, 2, 3}
-	obj := msg.NewSimpleMsg(uuid.Nil, content)
-	obj.RemoveContent()
-	if obj.GetContent() != nil {
-		t.Errorf("Removing content shall clean content field %v", obj)
-	}
-}

@@ -12,37 +12,37 @@ import (
 	"github.com/mes1234/syncbrok/internal/space"
 )
 
-func httpNewMsgController(newMsgCh chan<- space.Messages) {
+func httpNewMsgController(newMsgCh chan<- space.Message) {
 	msgHandler := createNewMsgEndpoint(newMsgCh)
 	http.HandleFunc("/msg", msgHandler)
 }
 
-func httpNewSubscriberController(newSubscribersCh chan<- space.Subscribers) {
+func httpNewSubscriberController(newSubscribersCh chan<- space.Subscriber) {
 	subscriberHandler := createNewSubscriberEndpoint(newSubscribersCh)
 	http.HandleFunc("/subscrib", subscriberHandler)
 }
 
-func httpNewQueueController(newQueueCh chan<- space.Queues) {
+func httpNewQueueController(newQueueCh chan<- space.Queue) {
 	queueHandler := createNewQueueEndpoint(newQueueCh)
 	http.HandleFunc("/queue", queueHandler)
 }
 
 func HttpStart(
 	wg *sync.WaitGroup,
-	newMsgCh chan<- space.Messages,
-	newSubscribersCh chan<- space.Subscribers,
-	newQueueCh chan<- space.Queues) {
+	newMsgCh chan<- space.Message,
+	newSubscribersCh chan<- space.Subscriber,
+	newQueueCh chan<- space.Queue) {
 	httpNewMsgController(newMsgCh)
 	httpNewSubscriberController(newSubscribersCh)
 	httpNewQueueController(newQueueCh)
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
 
-func createNewSubscriberEndpoint(newSubscribersCh chan<- space.Subscribers) func(http.ResponseWriter, *http.Request) {
+func createNewSubscriberEndpoint(newSubscribersCh chan<- space.Subscriber) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queueName := parseQueueName(r)
 		endpointName := parseEndpointName(r)
-		newSubscribersCh <- space.Subscribers{
+		newSubscribersCh <- space.Subscriber{
 			QName:    queueName,
 			Endpoint: endpointName,
 		}
@@ -51,7 +51,7 @@ func createNewSubscriberEndpoint(newSubscribersCh chan<- space.Subscribers) func
 	}
 }
 
-func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWriter, *http.Request) {
+func createNewQueueEndpoint(newQueueCh chan<- space.Queue) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queueName := parseQueueName(r)
 		if queueName == "" {
@@ -59,7 +59,7 @@ func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWr
 			fmt.Fprintf(w, "You posted empty queue name, queue name shall be provided")
 			return
 		}
-		newQueue := space.Queues{
+		newQueue := space.Queue{
 			QName: queueName,
 		}
 		newQueueCh <- newQueue
@@ -68,14 +68,14 @@ func createNewQueueEndpoint(newQueueCh chan<- space.Queues) func(http.ResponseWr
 	}
 }
 
-func createNewMsgEndpoint(newMsgCh chan<- space.Messages) func(http.ResponseWriter, *http.Request) {
+func createNewMsgEndpoint(newMsgCh chan<- space.Message) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		body, _ := ioutil.ReadAll(r.Body)
 		parentId := parseParentId(r)
 		queueName := parseQueueName(r)
-		newMsg := space.Messages{
+		newMsg := space.Message{
 			QName:   queueName,
 			Content: msg.NewSimpleMsg(parentId, body),
 		}

@@ -2,7 +2,6 @@ package msg
 
 import (
 	"encoding/json"
-	"log"
 	"sync"
 	"time"
 
@@ -20,10 +19,6 @@ func (m simpleMsg) GetId() uuid.UUID {
 	return m.Id
 }
 
-func (m *simpleMsg) RemoveContent() {
-	m.Content = nil
-}
-
 func (m simpleMsg) GetParentId() uuid.UUID {
 	return m.Parent
 }
@@ -32,34 +27,22 @@ func (m simpleMsg) GetContent() []byte {
 	return m.Content
 }
 
-func (m simpleMsg) Process(
-	wgParent *sync.WaitGroup,
-	wgSelf *sync.WaitGroup,
-	callback Callback,
-	endpoints []string,
-	store func(uuid.UUID) []byte,
-	storeAck chan<- uuid.UUID) {
+func (m simpleMsg) Process(wgParent *sync.WaitGroup, wgSelf *sync.WaitGroup, callback Callback, endpoints []string, ack chan<- uuid.UUID) {
 	defer wgSelf.Done()
-	log.Print("processing begins")
 	if m.Parent != uuid.Nil {
-		log.Print("I will wait for my parent to finish")
 		wgParent.Wait()
-		log.Print("my parent completed I shall proceed")
-	} else {
-		log.Print("I dont have parent let me do my job")
 	}
-	m.Content = store(m.GetId())
-	response, _ := json.Marshal(m)
+	content, _ := json.Marshal(m)
 	status := true
 	for _, endpoint := range endpoints {
-		status = status && callback(response, endpoint)
+		status = status && callback(content, endpoint)
 	}
 	if status {
-		storeAck <- m.Id
+		ack <- m.Id
 	} else {
 		time.Sleep(3 * time.Second)
 		wgSelf.Add(1)
-		go m.Process(wgParent, wgSelf, callback, endpoints, store, storeAck)
+		go m.Process(wgParent, wgSelf, callback, endpoints, ack)
 	}
 
 }

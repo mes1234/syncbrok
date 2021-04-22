@@ -6,16 +6,16 @@ import (
 	"github.com/mes1234/syncbrok/internal/msg"
 )
 
-type Messages struct {
+type Message struct {
 	QName   string
 	Content msg.Msg
 }
 
-type Queues struct {
+type Queue struct {
 	QName string
 }
 
-type Subscribers struct {
+type Subscriber struct {
 	QName    string
 	Handler  msg.Callback
 	Endpoint string
@@ -24,6 +24,6 @@ type Subscribers struct {
 type Space interface {
 	Start(*sync.WaitGroup)
 	addQueue(string)
-	publish(string, msg.Msg)
-	subscribe(string, string)
+	addMsg(string, msg.Msg)
+	addSubscriber(string, string)
 }

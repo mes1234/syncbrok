@@ -47,10 +47,9 @@ func (q *SimpleQueue) AddMsg(m msg.Msg) {
 		wg:   &wgSelf,
 	}
 	q.storage <- m
-	m.RemoveContent()
 	q.items = append(q.items, newItem)
 	log.Print("Added item to  queue :", q.name)
-	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers, q.storeReader, q.storageAck)
+	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers, q.storageAck)
 }
 
 func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
