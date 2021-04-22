@@ -2,20 +2,14 @@ package queue
 
 import (
 	"log"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
 	"github.com/mes1234/syncbrok/internal/storage"
 )
 
-type msgWithSync struct {
-	item msg.Msg
-	wg   *sync.WaitGroup
-}
-
 type SimpleQueue struct {
-	items       []msgWithSync
+	items       []msg.Msg
 	name        string
 	subscribers []string
 	handler     msg.Callback
@@ -24,32 +18,31 @@ type SimpleQueue struct {
 	storeReader storage.FileReader
 }
 
-func (q SimpleQueue) FindById(id uuid.UUID) (msg.Msg, *sync.WaitGroup) {
+func (q SimpleQueue) FindById(id uuid.UUID) msg.Msg {
 	for _, element := range q.items {
-		if element.item.GetId() == id {
-			return element.item, element.wg
+		if element.GetId() == id {
+			return element
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 //Add item to end of queue
 func (q *SimpleQueue) AddMsg(m msg.Msg) {
-	parentId := m.GetParentId()
-	var wgParent *sync.WaitGroup = nil
-	if parentId != uuid.Nil {
-		_, wgParent = q.FindById(parentId)
-	}
-	wgSelf := sync.WaitGroup{}
-	wgSelf.Add(1)
-	newItem := msgWithSync{
-		item: m,
-		wg:   &wgSelf,
-	}
+
 	q.storage <- m
-	q.items = append(q.items, newItem)
+	q.items = append(q.items, m)
 	log.Print("Added item to  queue :", q.name)
-	go m.Process(wgParent, &wgSelf, q.handler, q.subscribers, q.storageAck)
+
+	parentId := m.GetParentId()
+	var parent msg.Msg = nil
+	if parentId != uuid.Nil {
+		parent = q.FindById(parentId)
+		go m.Process(parent.GetWaiter(), q.handler, q.subscribers, q.storageAck)
+	} else {
+		go m.Process(nil, q.handler, q.subscribers, q.storageAck)
+	}
+
 }
 
 func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
@@ -59,7 +52,7 @@ func (q *SimpleQueue) AddCallback(callback msg.Callback, endpoint string) {
 
 func NewSimpleQueue(name string, storage chan<- msg.Msg, ackMessageCh chan<- uuid.UUID, storeReader storage.FileReader) Queue {
 	return &SimpleQueue{
-		items:       make([]msgWithSync, 0),
+		items:       make([]msg.Msg, 0),
 		name:        name,
 		storage:     storage,
 		storageAck:  ackMessageCh,

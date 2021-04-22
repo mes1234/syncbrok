@@ -43,7 +43,7 @@ func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, ms
 	newMessagesCh := make(chan msg.Msg)
 	addMsgCh = newMessagesCh
 	fw.addMsgCh = newMessagesCh
-	ackMessageCh := make(chan uuid.UUID)
+	ackMessageCh := make(chan uuid.UUID, 1000)
 	msgAckCh = ackMessageCh
 	fw.msgAckCh = ackMessageCh
 	reader = prepareReader(fileContent, fw.lookup)

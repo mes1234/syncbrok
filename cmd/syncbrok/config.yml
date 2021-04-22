@@ -4,7 +4,7 @@ Queues:
       - "http://localhost:10000/msg"
   test:
     urls :
-        - "http://localhost:10000/msg"
+        - "http://localhost:20000/"
   whatever:
     urls :
       - "http://localhost:10000/msg"

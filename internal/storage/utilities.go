@@ -28,7 +28,7 @@ func (fw *FileWriter) recoverMsges(queueName string) {
 			break
 		}
 
-		go fw.decodeMsgSave(buffer)
+		fw.decodeMsgSave(buffer)
 
 	}
 }
