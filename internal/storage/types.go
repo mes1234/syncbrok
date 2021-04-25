@@ -3,6 +3,7 @@ package storage
 import (
 	"bufio"
 	"bytes"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
@@ -13,12 +14,14 @@ type MsgSave struct {
 	Len         int
 	Id          uuid.UUID
 	Parent      uuid.UUID
+	TimeStamp   time.Time
 }
 
 type FileWriter struct {
 	path        string
-	fileContent *bufio.Writer
+	fileContent *bufio.ReadWriter
 	fileIndex   *bufio.ReadWriter
+	fileAck     *bufio.ReadWriter
 	offset      int64
 	addMsgCh    <-chan msg.Msg
 	msgAckCh    <-chan uuid.UUID

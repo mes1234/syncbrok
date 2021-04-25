@@ -33,10 +33,28 @@ func (fw *FileWriter) recoverMsges(queueName string) {
 	}
 }
 
-func getBytes(i int) []byte {
-	buf := make([]byte, binary.MaxVarintLen64)
-	binary.PutUvarint(buf, uint64(i))
-	return buf
+func getBytes(i interface{}) []byte {
+
+	switch v := i.(type) {
+	case int:
+		buf := make([]byte, binary.MaxVarintLen64)
+		binary.PutUvarint(buf, uint64(v))
+		return buf
+	case uuid.UUID:
+		buf, err := v.MarshalBinary()
+		if err != nil {
+			panic(err)
+		}
+		return buf
+	default:
+		panic("There is no support for this type")
+	}
+
+}
+
+func (fw *FileWriter) ackMsgToStore(u uuid.UUID) {
+	fw.fileAck.Write(getBytes(u))
+	fw.fileAck.Flush()
 }
 
 func (fw *FileWriter) addToStore(m msg.Msg) {
@@ -46,6 +64,7 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 		Len:         len(content),
 		Id:          m.GetId(),
 		Parent:      m.GetParentId(),
+		TimeStamp:   m.GetTime(),
 	}
 	fw.lookup[m.GetId()] = msg
 

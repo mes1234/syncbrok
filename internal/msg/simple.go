@@ -15,11 +15,12 @@ type simpleMsg struct {
 	Parent    uuid.UUID `json:"parent"`
 	Content   []byte    `json:"content"`
 	Waiter    *sync.WaitGroup
-	TimeStamp time.Time
+	TimeStamp time.Time `json:"timestamp"`
+	Delivered bool
 }
 
-func (m *simpleMsg) GetEpochs() int64 {
-	return m.TimeStamp.Unix()
+func (m *simpleMsg) GetTime() time.Time {
+	return m.TimeStamp
 }
 
 func (m *simpleMsg) GetWaiter() *sync.WaitGroup {
@@ -53,6 +54,7 @@ func (m *simpleMsg) Process(wgParent *sync.WaitGroup, callback Callback, endpoin
 	}
 	if status {
 		ack <- m.Id
+		m.Delivered = true
 		log.Printf("Finished %v", m.Id)
 	} else {
 		log.Printf("Not reciving ack try once again %v", m.Id)
