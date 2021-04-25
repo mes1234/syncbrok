@@ -30,6 +30,7 @@ func (q SimpleQueue) FindById(id uuid.UUID) msg.Msg {
 //Add item to end of queue
 func (q *SimpleQueue) AddMsg(m msg.Msg) {
 
+	log.Printf("unix time %v", m.GetEpochs())
 	q.storage <- m
 	q.items = append(q.items, m)
 	log.Print("Added item to  queue :", q.name)

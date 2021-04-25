@@ -11,10 +11,15 @@ import (
 
 //Message is an entity passed between channels
 type simpleMsg struct {
-	Id      uuid.UUID `json:"id"`
-	Parent  uuid.UUID `json:"parent"`
-	Content []byte    `json:"content"`
-	Waiter  *sync.WaitGroup
+	Id        uuid.UUID `json:"id"`
+	Parent    uuid.UUID `json:"parent"`
+	Content   []byte    `json:"content"`
+	Waiter    *sync.WaitGroup
+	TimeStamp time.Time
+}
+
+func (m *simpleMsg) GetEpochs() int64 {
+	return m.TimeStamp.Unix()
 }
 
 func (m *simpleMsg) GetWaiter() *sync.WaitGroup {
@@ -64,9 +69,10 @@ func NewSimpleMsg(parentId uuid.UUID, content []byte) Msg {
 	waiter := sync.WaitGroup{}
 	waiter.Add(1)
 	return &simpleMsg{
-		Id:      uuid.New(),
-		Parent:  parentId,
-		Content: content,
-		Waiter:  &waiter,
+		Id:        uuid.New(),
+		Parent:    parentId,
+		Content:   content,
+		Waiter:    &waiter,
+		TimeStamp: time.Now(),
 	}
 }
