@@ -25,7 +25,7 @@ func (fw FileWriter) Start() {
 	}
 }
 
-func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, msgAckCh chan<- uuid.UUID, contentReader FileReader) {
+func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan msg.Msg, msgAckCh chan uuid.UUID, contentReader FileReader) {
 	fileContent, err := os.OpenFile(fw.path+queueName, os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
 		log.Fatal(err)
@@ -50,11 +50,11 @@ func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan<- msg.Msg, ms
 
 	fw.recoverMsges(queueName)
 
-	newMessagesCh := make(chan msg.Msg)
+	newMessagesCh := make(chan msg.Msg, 100)
 	addMsgCh = newMessagesCh
 	fw.addMsgCh = newMessagesCh
 
-	ackMessageCh := make(chan uuid.UUID, 1000)
+	ackMessageCh := make(chan uuid.UUID, 100)
 	msgAckCh = ackMessageCh
 	fw.msgAckCh = ackMessageCh
 

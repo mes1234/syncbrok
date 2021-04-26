@@ -64,7 +64,6 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 		Len:         len(content),
 		Id:          m.GetId(),
 		Parent:      m.GetParentId(),
-		TimeStamp:   m.GetTime(),
 	}
 	fw.lookup[m.GetId()] = msg
 

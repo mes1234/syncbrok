@@ -2,7 +2,6 @@ package msg
 
 import (
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -16,5 +15,4 @@ type Msg interface {
 	GetParentId() uuid.UUID
 	Process(*sync.WaitGroup, Callback, []string, chan<- uuid.UUID)
 	GetContent() []byte
-	GetTime() time.Time
 }
