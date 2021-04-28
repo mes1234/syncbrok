@@ -23,10 +23,13 @@ type SimpleQueue struct {
 }
 
 func (q SimpleQueue) findById(id uuid.UUID) msg.Msg {
-	for _, element := range q.items {
-		if element.GetId() == id {
-			return element
+	if true == true {
+		for _, element := range q.items {
+			if element.GetId() == id {
+				return element
+			}
 		}
+		return nil
 	}
 	return nil
 }
