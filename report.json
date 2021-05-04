@@ -1,0 +1,23 @@
+{"Time":"2021-05-04T22:37:07.8417426+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/cmd/subscriber","Output":"?   \tgithub.com/mes1234/syncbrok/cmd/subscriber\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:07.8433399+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/cmd/subscriber","Elapsed":0.002}
+{"Time":"2021-05-04T22:37:08.6744227+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/cmd/syncbrok","Output":"?   \tgithub.com/mes1234/syncbrok/cmd/syncbrok\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.6744227+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/cmd/syncbrok","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.6744227+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/config","Output":"?   \tgithub.com/mes1234/syncbrok/internal/config\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.6744227+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/internal/config","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.6749531+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/frontend","Output":"?   \tgithub.com/mes1234/syncbrok/internal/frontend\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.6749531+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/internal/frontend","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.6749531+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/handlers","Output":"?   \tgithub.com/mes1234/syncbrok/internal/handlers\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.6749531+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/internal/handlers","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.7954461+02:00","Action":"run","Package":"github.com/mes1234/syncbrok/internal/msg","Test":"TestNewSimpleMsgCreation"}
+{"Time":"2021-05-04T22:37:08.7954461+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/msg","Test":"TestNewSimpleMsgCreation","Output":"=== RUN   TestNewSimpleMsgCreation\n"}
+{"Time":"2021-05-04T22:37:08.7954461+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/msg","Test":"TestNewSimpleMsgCreation","Output":"--- PASS: TestNewSimpleMsgCreation (0.00s)\n"}
+{"Time":"2021-05-04T22:37:08.7954461+02:00","Action":"pass","Package":"github.com/mes1234/syncbrok/internal/msg","Test":"TestNewSimpleMsgCreation","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.7954461+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/msg","Output":"PASS\n"}
+{"Time":"2021-05-04T22:37:08.8072285+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/msg","Output":"ok  \tgithub.com/mes1234/syncbrok/internal/msg\t0.178s\n"}
+{"Time":"2021-05-04T22:37:08.828947+02:00","Action":"pass","Package":"github.com/mes1234/syncbrok/internal/msg","Elapsed":0.2}
+{"Time":"2021-05-04T22:37:08.8294604+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/queue","Output":"?   \tgithub.com/mes1234/syncbrok/internal/queue\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.8294604+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/internal/queue","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.8294604+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/space","Output":"?   \tgithub.com/mes1234/syncbrok/internal/space\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.8294604+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/internal/space","Elapsed":0}
+{"Time":"2021-05-04T22:37:08.8294604+02:00","Action":"output","Package":"github.com/mes1234/syncbrok/internal/storage","Output":"?   \tgithub.com/mes1234/syncbrok/internal/storage\t[no test files]\n"}
+{"Time":"2021-05-04T22:37:08.8294604+02:00","Action":"skip","Package":"github.com/mes1234/syncbrok/internal/storage","Elapsed":0}
