@@ -2,6 +2,6 @@ language: go
 go:
  - master
 os:
-  - windows
+  - linux
 script:
  - make 
