@@ -64,9 +64,9 @@ func (q *SimpleQueue) addMsg(m msg.Msg) {
 	var parent msg.Msg = nil
 	if parentId != uuid.Nil || q.delivered(parentId) {
 		parent = q.findById(parentId)
-		go m.Process(parent.GetWaiter(), q.handler, q.subscribers, q.storageAck, time.Millisecond*10)
+		go m.Process(parent.GetWaiter(), q.handler, q.subscribers)
 	} else {
-		go m.Process(nil, q.handler, q.subscribers, q.storageAck, time.Millisecond*10)
+		go m.Process(nil, q.handler, q.subscribers)
 	}
 
 }
