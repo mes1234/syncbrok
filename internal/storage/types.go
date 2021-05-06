@@ -20,7 +20,6 @@ type MsgSave struct {
 type FileWriter struct {
 	path        string
 	fileContent *bufio.ReadWriter
-	fileIndex   *bufio.ReadWriter
 	offset      int64
 	addMsgCh    <-chan msg.Msg
 	lookup      map[uuid.UUID]MsgSave

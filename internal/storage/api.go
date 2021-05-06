@@ -30,14 +30,7 @@ func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan msg.Msg, cont
 		panic(err)
 	}
 
-	fileIndex, err := os.OpenFile(fw.path+queueName+"_id", os.O_APPEND|os.O_CREATE, 0755)
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
-
 	fw.fileContent = bufio.NewReadWriter(bufio.NewReader(fileContent), bufio.NewWriter(fileContent))
-	fw.fileIndex = bufio.NewReadWriter(bufio.NewReader(fileIndex), bufio.NewWriter(fileIndex))
 
 	newMessagesCh := make(chan msg.Msg, 100)
 	addMsgCh = newMessagesCh

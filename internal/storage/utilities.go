@@ -1,32 +1,12 @@
 package storage
 
 import (
-	"encoding/binary"
 	"log"
 	"os"
 
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
 )
-
-func getBytes(i interface{}) []byte {
-
-	switch v := i.(type) {
-	case int:
-		buf := make([]byte, binary.MaxVarintLen64)
-		binary.PutUvarint(buf, uint64(v))
-		return buf
-	case uuid.UUID:
-		buf, err := v.MarshalBinary()
-		if err != nil {
-			panic(err)
-		}
-		return buf
-	default:
-		panic("There is no support for this type")
-	}
-
-}
 
 func (fw *FileWriter) addToStore(m msg.Msg) {
 	content := m.GetContent()
@@ -37,12 +17,6 @@ func (fw *FileWriter) addToStore(m msg.Msg) {
 		Parent:      m.GetParentId(),
 	}
 	fw.lookup[m.GetId()] = msg
-
-	msgBytes := fw.encodeMsgSave(msg)
-	fw.fileIndex.Write(getBytes(len(msgBytes))) // save size of gob
-	fw.fileIndex.Write(msgBytes)                //save gob
-
-	fw.fileIndex.Flush()
 
 	fw.offset = fw.offset + int64(len(content))
 	fw.fileContent.Write(content)
