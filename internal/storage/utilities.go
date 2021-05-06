@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"bytes"
 	"encoding/binary"
 	"log"
 	"os"
@@ -9,29 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
 )
-
-func (fw *FileWriter) recoverMsges(queueName string) {
-
-	reader := fw.fileIndex.Reader
-	for {
-
-		buffer := make([]byte, binary.MaxVarintLen64)
-		binary.Read(reader, binary.LittleEndian, buffer)
-		count, err := binary.ReadUvarint(bytes.NewReader(buffer))
-		if err != nil || count == 0 {
-			break
-		}
-
-		buffer = make([]byte, count)
-		err = binary.Read(reader, binary.LittleEndian, buffer)
-		if err != nil {
-			break
-		}
-
-		fw.decodeMsgSave(buffer)
-
-	}
-}
 
 func getBytes(i interface{}) []byte {
 
@@ -50,11 +26,6 @@ func getBytes(i interface{}) []byte {
 		panic("There is no support for this type")
 	}
 
-}
-
-func (fw *FileWriter) ackMsgToStore(u uuid.UUID) {
-	fw.fileAck.Write(getBytes(u))
-	fw.fileAck.Flush()
 }
 
 func (fw *FileWriter) addToStore(m msg.Msg) {

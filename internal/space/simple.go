@@ -25,7 +25,7 @@ func (s SimpleSpace) Start(wg *sync.WaitGroup) {
 		case newMsg := <-s.newMessages:
 			s.addMsg(newMsg.QName, newMsg.Content)
 		case newQueue := <-s.newQueues:
-			s.addQueue(newQueue.QName)
+			s.addQueue(newQueue.QName, newQueue.Storage)
 		case newSubcriber := <-s.newSubscribers:
 			s.addSubscriber(newSubcriber.QName, newSubcriber.Endpoint)
 		default:
@@ -34,13 +34,13 @@ func (s SimpleSpace) Start(wg *sync.WaitGroup) {
 	}
 }
 
-func (s *SimpleSpace) addQueue(queueName string) {
+func (s *SimpleSpace) addQueue(queueName string, storagePath string) {
 
 	if _, ok := s.queues[queueName]; !ok {
-		store := storage.NewFileWriter()
-		storeCh, storeAckCh, storeReader := store.CreateQueue(queueName)
+		store := storage.NewFileWriter(storagePath)
+		storeCh, storeReader := store.CreateQueue(queueName)
 		go store.Start()
-		queue := queue.NewSimpleQueue(queueName, storeCh, storeAckCh, storeReader, s.handler)
+		queue := queue.NewSimpleQueue(queueName, storeCh, storeReader, s.handler)
 		s.queues[queueName] = queue.GetMsgCh()
 		s.subcribers[queueName] = queue.GetSubscriberCh()
 		go queue.Start()

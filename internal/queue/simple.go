@@ -64,9 +64,9 @@ func (q *SimpleQueue) addMsg(m msg.Msg) {
 	var parent msg.Msg = nil
 	if parentId != uuid.Nil || q.delivered(parentId) {
 		parent = q.findById(parentId)
-		go m.Process(parent.GetWaiter(), q.handler, q.subscribers, q.storageAck)
+		go m.Process(parent.GetWaiter(), q.handler, q.subscribers, q.storageAck, time.Millisecond*10)
 	} else {
-		go m.Process(nil, q.handler, q.subscribers, q.storageAck)
+		go m.Process(nil, q.handler, q.subscribers, q.storageAck, time.Millisecond*10)
 	}
 
 }
@@ -86,30 +86,16 @@ func (q *SimpleQueue) addCallback(endpoint string) {
 	q.subscribers = append(q.subscribers, endpoint)
 }
 
-func (q *SimpleQueue) captureDelivery(ackMessageCh chan<- uuid.UUID, proxyMsgAckCh <-chan uuid.UUID) {
-	for {
-		msgAck := <-proxyMsgAckCh
-		q.deliveredItems = append(q.deliveredItems, msgAck)
-		ackMessageCh <- msgAck
-	}
-
-}
-
-func NewSimpleQueue(name string, storage chan msg.Msg, ackMessageCh chan uuid.UUID, storeReader storage.FileReader, handler msg.Callback) Queue {
-	proxyMsgAckCh := make(chan uuid.UUID)
-	q := SimpleQueue{
+func NewSimpleQueue(name string, storage chan msg.Msg, storeReader storage.FileReader, handler msg.Callback) Queue {
+	return &SimpleQueue{
 		items:           make([]msg.Msg, 0),
 		name:            name,
 		storage:         storage,
-		storageAck:      proxyMsgAckCh,
 		storeReader:     storeReader,
 		deliveredItems:  make([]uuid.UUID, 0),
 		newMsgCh:        make(chan msg.Msg, 100),
 		newSubscriberCh: make(chan string, 100),
 		handler:         handler,
 	}
-
-	go q.captureDelivery(ackMessageCh, proxyMsgAckCh)
-	return &q
 
 }

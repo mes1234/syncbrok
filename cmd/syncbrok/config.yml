@@ -1,3 +1,5 @@
+Storage:
+  path: "/mnt/c/Users/witol/go/syncbrok/temp/"
 Queues: 
   simple :
     urls :

@@ -39,7 +39,7 @@ func (m *simpleMsg) GetContent() []byte {
 	return m.Content
 }
 
-func (m *simpleMsg) Process(wgParent *sync.WaitGroup, callback Callback, endpoints []string, ack chan<- uuid.UUID) {
+func (m *simpleMsg) Process(wgParent *sync.WaitGroup, callback Callback, endpoints []string, ack chan<- uuid.UUID, timeOut time.Duration) {
 	defer m.Waiter.Done()
 	if wgParent != nil {
 		log.Printf("I have parent so I need to wait %v", m.Id)
@@ -57,10 +57,10 @@ func (m *simpleMsg) Process(wgParent *sync.WaitGroup, callback Callback, endpoin
 		m.Delivered = true
 		log.Printf("Finished %v", m.Id)
 	} else {
-		log.Printf("Not reciving ack try once again %v", m.Id)
-		time.Sleep(3 * time.Second)
+		log.Printf("Not reciving ack try once again %v in %v", m.Id, timeOut*2)
+		time.Sleep(timeOut)
 		m.Waiter.Add(1)
-		go m.Process(wgParent, callback, endpoints, ack)
+		go m.Process(wgParent, callback, endpoints, ack, timeOut*2)
 	}
 
 }

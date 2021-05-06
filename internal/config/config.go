@@ -12,8 +12,13 @@ type QueueConifg struct {
 	Urls []string `yaml:"url"`
 }
 
+type StorageConfig struct {
+	Path string `yaml:"path"`
+}
+
 type Configuration struct {
 	Queues           map[string]QueueConifg //Definition of queues
+	Storage          StorageConfig
 	newMsgCh         chan<- space.Message
 	newSubscribersCh chan<- space.Subscriber
 	newQueueCh       chan<- space.Queue
@@ -44,7 +49,10 @@ func Bootstrap(
 func (c *Configuration) initQueues() {
 	viper.Unmarshal(&c)
 	for queue, config := range c.Queues {
-		c.newQueueCh <- space.Queue{QName: queue}
+		c.newQueueCh <- space.Queue{
+			QName:   queue,
+			Storage: c.Storage.Path,
+		}
 		for _, value := range config.Urls {
 			c.newSubscribersCh <- space.Subscriber{
 				QName:    queue,

@@ -12,7 +12,8 @@ type Message struct {
 }
 
 type Queue struct {
-	QName string
+	QName   string
+	Storage string
 }
 
 type Subscriber struct {
@@ -23,7 +24,7 @@ type Subscriber struct {
 
 type Space interface {
 	Start(*sync.WaitGroup)
-	addQueue(string)
+	addQueue(string, string)
 	addMsg(string, msg.Msg)
 	addSubscriber(string, string)
 }

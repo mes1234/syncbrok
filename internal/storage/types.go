@@ -21,10 +21,8 @@ type FileWriter struct {
 	path        string
 	fileContent *bufio.ReadWriter
 	fileIndex   *bufio.ReadWriter
-	fileAck     *bufio.ReadWriter
 	offset      int64
 	addMsgCh    <-chan msg.Msg
-	msgAckCh    <-chan uuid.UUID
 	lookup      map[uuid.UUID]MsgSave
 	buffer      bytes.Buffer
 }

@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"bytes"
 	"encoding/gob"
 	"log"
 )
@@ -15,16 +14,4 @@ func (fw *FileWriter) encodeMsgSave(msg MsgSave) (bytes []byte) {
 	bytes = fw.buffer.Bytes()
 	fw.buffer.Reset()
 	return
-}
-
-func (fw *FileWriter) decodeMsgSave(buffer []byte) {
-	gobReader := bytes.NewReader(buffer)
-	decoder := gob.NewDecoder(gobReader)
-	newMsg := MsgSave{}
-	err := decoder.Decode(&newMsg)
-	if err != nil {
-		panic(err)
-	}
-	fw.lookup[newMsg.Id] = newMsg
-	fw.offset = fw.offset + int64(newMsg.Len)
 }
