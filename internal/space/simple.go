@@ -17,7 +17,7 @@ type SimpleSpace struct {
 	newMessages    <-chan Message
 	newQueues      <-chan Queue
 	newSubscribers <-chan Subscriber
-	handler        msg.CallbackFactory
+	handler        func(storage.FileReader) func(uuid.UUID, string, *sync.WaitGroup)
 }
 
 func (s SimpleSpace) Start(wg *sync.WaitGroup) {
@@ -64,7 +64,7 @@ func (s SimpleSpace) addSubscriber(queueName string, endpoint string) {
 	}
 
 }
-func New(handler func(uuid.UUID) []byte) (Space, chan<- Message, chan<- Queue, chan<- Subscriber) {
+func New(handler func(storage.FileReader) func(uuid.UUID, string, *sync.WaitGroup)) (Space, chan<- Message, chan<- Queue, chan<- Subscriber) {
 	newMessagesCh := make(chan Message)
 	newQueuesCh := make(chan Queue)
 	newSubscribersCh := make(chan Subscriber)
