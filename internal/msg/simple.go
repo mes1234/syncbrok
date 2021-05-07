@@ -1,7 +1,6 @@
 package msg
 
 import (
-	"encoding/json"
 	"log"
 	"sync"
 	"time"
@@ -17,6 +16,10 @@ type simpleMsg struct {
 	Waiter    *sync.WaitGroup
 	TimeStamp time.Time `json:"timestamp"`
 	Delivered bool
+}
+
+func (m *simpleMsg) RemovePayload() {
+	m.Content = nil
 }
 
 func (m *simpleMsg) GetTime() time.Time {
@@ -47,11 +50,10 @@ func (m *simpleMsg) Process(wgParent *sync.WaitGroup, callback Callback, endpoin
 		log.Printf("My parent finished let me proceed %v", m.Id)
 	}
 	log.Printf("Processing %v", m.Id)
-	content, _ := json.Marshal(m)
 	callbackWg := sync.WaitGroup{}
 	for _, endpoint := range endpoints {
 		callbackWg.Add(1)
-		go callback(content, endpoint, &callbackWg)
+		go callback(m.Id, endpoint, &callbackWg)
 	}
 	callbackWg.Wait()
 	m.Delivered = true

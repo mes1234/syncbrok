@@ -14,7 +14,7 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	// Begining of life
-	universe, newMsgCh, newQueuesCh, newSubscribersCh := space.New(handlers.HttphandleMessage)
+	universe, newMsgCh, newQueuesCh, newSubscribersCh := space.New(handlers.HttphandleMessageFactory)
 	go universe.Start(&wg)
 	go frontend.HttpStart(&wg, newMsgCh, newSubscribersCh, newQueuesCh)
 

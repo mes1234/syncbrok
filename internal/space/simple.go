@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
 	"github.com/mes1234/syncbrok/internal/queue"
 	"github.com/mes1234/syncbrok/internal/storage"
@@ -16,7 +17,7 @@ type SimpleSpace struct {
 	newMessages    <-chan Message
 	newQueues      <-chan Queue
 	newSubscribers <-chan Subscriber
-	handler        msg.Callback
+	handler        msg.CallbackFactory
 }
 
 func (s SimpleSpace) Start(wg *sync.WaitGroup) {
@@ -40,7 +41,7 @@ func (s *SimpleSpace) addQueue(queueName string, storagePath string) {
 		store := storage.NewFileWriter(storagePath)
 		storeCh, storeReader := store.CreateQueue(queueName)
 		go store.Start()
-		queue := queue.NewSimpleQueue(queueName, storeCh, storeReader, s.handler)
+		queue := queue.NewSimpleQueue(queueName, storeCh, s.handler(storeReader))
 		s.queues[queueName] = queue.GetMsgCh()
 		s.subcribers[queueName] = queue.GetSubscriberCh()
 		go queue.Start()
@@ -63,7 +64,7 @@ func (s SimpleSpace) addSubscriber(queueName string, endpoint string) {
 	}
 
 }
-func New(handler msg.Callback) (Space, chan<- Message, chan<- Queue, chan<- Subscriber) {
+func New(handler func(uuid.UUID) []byte) (Space, chan<- Message, chan<- Queue, chan<- Subscriber) {
 	newMessagesCh := make(chan Message)
 	newQueuesCh := make(chan Queue)
 	newSubscribersCh := make(chan Subscriber)
