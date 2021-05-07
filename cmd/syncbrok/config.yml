@@ -1,5 +1,5 @@
 Storage:
-  path: "/mnt/c/Users/witol/go/syncbrok/temp/"
+  path: "/home/witek/tmp/"
 Queues: 
   simple :
     urls :

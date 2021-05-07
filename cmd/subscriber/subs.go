@@ -13,7 +13,6 @@ import (
 
 type simpleMsg struct {
 	Id      uuid.UUID `json:"id"`
-	Parent  uuid.UUID `json:"parent"`
 	Content []byte    `json:"content"`
 }
 
