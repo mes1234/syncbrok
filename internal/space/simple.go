@@ -11,13 +11,15 @@ import (
 	"github.com/mes1234/syncbrok/internal/storage"
 )
 
+type HandlerFactoryFunc func(storage.FileReader) func(uuid.UUID, string, *sync.WaitGroup)
+
 type SimpleSpace struct {
 	queues         map[string]chan<- msg.Msg
 	subcribers     map[string]chan<- string
 	newMessages    <-chan Message
 	newQueues      <-chan Queue
 	newSubscribers <-chan Subscriber
-	handler        func(storage.FileReader) func(uuid.UUID, string, *sync.WaitGroup)
+	handler        HandlerFactoryFunc
 }
 
 func (s SimpleSpace) Start(wg *sync.WaitGroup) {
@@ -35,17 +37,25 @@ func (s SimpleSpace) Start(wg *sync.WaitGroup) {
 	}
 }
 
+func (s *SimpleSpace) addStorageToQueue(queueName string, storagePath string) (storeCh chan msg.Msg, storeReader storage.FileReader) {
+	store := storage.NewFileWriter(storagePath)
+	storeCh, storeReader = store.CreateQueue(queueName)
+	go store.Start()
+	return
+}
+
+func (s *SimpleSpace) initNewQueue(queueName string, storeCh chan msg.Msg, storeReader storage.FileReader) {
+	queue := queue.NewSimpleQueue(queueName, storeCh, s.handler(storeReader))
+	s.queues[queueName] = queue.GetMsgCh()
+	s.subcribers[queueName] = queue.GetSubscriberCh()
+	go queue.Start()
+}
+
 func (s *SimpleSpace) addQueue(queueName string, storagePath string) {
 
 	if _, ok := s.queues[queueName]; !ok {
-		store := storage.NewFileWriter(storagePath)
-		storeCh, storeReader := store.CreateQueue(queueName)
-		go store.Start()
-		queue := queue.NewSimpleQueue(queueName, storeCh, s.handler(storeReader))
-		s.queues[queueName] = queue.GetMsgCh()
-		s.subcribers[queueName] = queue.GetSubscriberCh()
-		go queue.Start()
-
+		storeCh, storeReader := s.addStorageToQueue(queueName, storagePath)
+		s.initNewQueue(queueName, storeCh, storeReader)
 		log.Print("Added new queue ", queueName)
 	}
 }
@@ -64,7 +74,7 @@ func (s SimpleSpace) addSubscriber(queueName string, endpoint string) {
 	}
 
 }
-func New(handler func(storage.FileReader) func(uuid.UUID, string, *sync.WaitGroup)) (Space, chan<- Message, chan<- Queue, chan<- Subscriber) {
+func New(handler HandlerFactoryFunc) (Space, chan<- Message, chan<- Queue, chan<- Subscriber) {
 	newMessagesCh := make(chan Message)
 	newQueuesCh := make(chan Queue)
 	newSubscribersCh := make(chan Subscriber)
