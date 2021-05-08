@@ -24,7 +24,7 @@ func (fw FileWriter) Start() {
 }
 
 func (fw *FileWriter) CreateQueue(queueName string) (addMsgCh chan msg.Msg, contentReader FileReader) {
-	fileContent, err := os.OpenFile(fw.path+queueName, os.O_APPEND|os.O_CREATE, 0755)
+	fileContent, err := os.Create(fw.path + queueName)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)

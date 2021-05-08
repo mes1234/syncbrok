@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mes1234/syncbrok/internal/msg"
-	"github.com/mes1234/syncbrok/internal/storage"
 )
 
 type SimpleQueue struct {
@@ -16,8 +15,6 @@ type SimpleQueue struct {
 	subscribers     []string
 	handler         msg.Callback
 	storage         chan<- msg.Msg
-	storageAck      chan<- uuid.UUID
-	storeReader     storage.FileReader
 	newMsgCh        chan msg.Msg
 	newSubscriberCh chan string
 }
@@ -57,6 +54,7 @@ func (q *SimpleQueue) Start() {
 func (q *SimpleQueue) addMsg(m msg.Msg) {
 
 	q.storage <- m
+	// m.RemovePayload()
 	q.items = append(q.items, m)
 	log.Print("Added item to  queue :", q.name)
 
@@ -86,12 +84,12 @@ func (q *SimpleQueue) addCallback(endpoint string) {
 	q.subscribers = append(q.subscribers, endpoint)
 }
 
-func NewSimpleQueue(name string, storage chan msg.Msg, storeReader storage.FileReader, handler msg.Callback) Queue {
+func NewSimpleQueue(name string, storage chan msg.Msg, handler msg.Callback) Queue {
+
 	return &SimpleQueue{
 		items:           make([]msg.Msg, 0),
 		name:            name,
 		storage:         storage,
-		storeReader:     storeReader,
 		deliveredItems:  make([]uuid.UUID, 0),
 		newMsgCh:        make(chan msg.Msg, 100),
 		newSubscriberCh: make(chan string, 100),

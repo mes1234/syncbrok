@@ -6,7 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type Callback func([]byte, string, *sync.WaitGroup)
+type CallbackFactory func(func(uuid.UUID) []byte) Callback
+type Callback func(uuid.UUID, string, *sync.WaitGroup)
 
 //Msg is main entinty
 type Msg interface {
@@ -15,4 +16,5 @@ type Msg interface {
 	GetParentId() uuid.UUID
 	Process(*sync.WaitGroup, Callback, []string)
 	GetContent() []byte
+	RemovePayload()
 }
