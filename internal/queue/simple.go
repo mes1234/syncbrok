@@ -14,7 +14,7 @@ type SimpleQueue struct {
 	name            string
 	subscribers     []string
 	handler         msg.Callback
-	storage         chan<- msg.Msg
+	storage         chan<- msg.MsgContent
 	newMsgCh        chan msg.Msg
 	newSubscriberCh chan string
 }
@@ -53,13 +53,17 @@ func (q *SimpleQueue) Start() {
 //Add item to end of queue
 func (q *SimpleQueue) addMsg(m msg.Msg) {
 
-	q.storage <- m
-	// m.RemovePayload()
+	q.storage <- msg.MsgContent{
+		Id:      m.GetId(),
+		Content: m.GetContent(),
+	}
+	m.RemovePayload()
 	q.items = append(q.items, m)
 	log.Print("Added item to  queue :", q.name)
 
 	parentId := m.GetParentId()
 	var parent msg.Msg = nil
+
 	if parentId != uuid.Nil || q.delivered(parentId) {
 		parent = q.findById(parentId)
 		go m.Process(parent.GetWaiter(), q.handler, q.subscribers)
@@ -84,7 +88,7 @@ func (q *SimpleQueue) addCallback(endpoint string) {
 	q.subscribers = append(q.subscribers, endpoint)
 }
 
-func NewSimpleQueue(name string, storage chan msg.Msg, handler msg.Callback) Queue {
+func NewSimpleQueue(name string, storage chan msg.MsgContent, handler msg.Callback) Queue {
 
 	return &SimpleQueue{
 		items:           make([]msg.Msg, 0),

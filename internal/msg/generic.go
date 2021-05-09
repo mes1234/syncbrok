@@ -18,3 +18,8 @@ type Msg interface {
 	GetContent() []byte
 	RemovePayload()
 }
+
+type MsgContent struct {
+	Id      uuid.UUID
+	Content []byte
+}

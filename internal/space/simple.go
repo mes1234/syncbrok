@@ -37,14 +37,14 @@ func (s SimpleSpace) Start(wg *sync.WaitGroup) {
 	}
 }
 
-func (s *SimpleSpace) addStorageToQueue(queueName string, storagePath string) (storeCh chan msg.Msg, storeReader storage.FileReader) {
+func (s *SimpleSpace) addStorageToQueue(queueName string, storagePath string) (storeCh chan msg.MsgContent, storeReader storage.FileReader) {
 	store := storage.NewFileWriter(storagePath)
 	storeCh, storeReader = store.CreateQueue(queueName)
 	go store.Start()
 	return
 }
 
-func (s *SimpleSpace) initNewQueue(queueName string, storeCh chan msg.Msg, storeReader storage.FileReader) {
+func (s *SimpleSpace) initNewQueue(queueName string, storeCh chan msg.MsgContent, storeReader storage.FileReader) {
 	queue := queue.NewSimpleQueue(queueName, storeCh, s.handler(storeReader))
 	s.queues[queueName] = queue.GetMsgCh()
 	s.subcribers[queueName] = queue.GetSubscriberCh()
