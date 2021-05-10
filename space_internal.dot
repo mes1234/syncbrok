@@ -1,0 +1,49 @@
+digraph {
+    node [shape=rect,style="rounded,filled", fillcolor=lightblue,fontsize=8,fixedsize=true,width=1.5]; 
+    edge [fontsize=8]; 
+    rankdir=TB;
+
+
+    subgraph cluster_0 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+        space_queues  [label="queue repository "]
+        space_subscribers [label="subscribers repository "]
+        space_handler [label="handler Factory"]
+        // space_newMessages [label="newMessages "]
+        // space_newQueues [label="space_newQueues "]
+        // space_newSubscribers [label="newSubscribers "]
+
+        space_addQueue [label="method addQueue "]
+        space_addMsg [label="method addMsg "]
+        space_addSubscriber [label="method addSubscriber "]
+
+		label = "space";
+	}
+
+//    newMsg [label="New Message"]
+//    newQueue [label="New Queue"]
+//    newSubscriber [label="New Subscriber"]
+
+   newQueue -> space_addQueue 
+
+   space_addQueue -> addStorageToQueue -> start_Storage 
+   space_addQueue -> initNewQueue -> start_Queue
+   start_Queue -> space_queues [label="save reference"]
+   
+   start_Storage [label="begin new storage instance"]
+   start_Queue [label="begin new queue instance"]
+
+
+//    newMsg -> space_addMsg 
+//    push_newMsgToQueue  [label="push new message to queue"]
+//    space_addMsg -> push_newMsgToQueue
+//    push_newMsgToQueue -> space_queues 
+
+// push_newSubscriber [label="add subscribers to repository"]
+// newSubscriber -> space_addSubscriber
+// space_addSubscriber -> push_newSubscriber  
+// push_newSubscriber -> space_subscribers
+
+}

@@ -1,0 +1,54 @@
+digraph {
+    splines=line
+    node [shape=rect,style="rounded,filled", fillcolor=lightblue,fontsize=8,fixedsize=true,width=1.5]; 
+    edge [fontsize=8]; 
+    rankdir=LR;
+
+
+    subgraph cluster_0 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+        space_newMessages [label="newMessages "]
+        space_newQueues [label="space_newQueues "]
+        space_newSubscribers [label="newSubscribers "]
+		label = "space";
+	}
+
+   
+
+  subgraph cluster_1 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+        bootstrap_newSubscribersCh [label="newSubscribersCh "]
+        bootstrap_newQueueCh [label="newQueueCh "]
+		label = "Config File";
+	}
+  
+
+    subgraph cluster_2 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+        frontend_newMsgCh [label="newMsgCh "]
+        frontend_newSubscribersCh [label="newSubscribersCh "]
+        frontend_newQueueCh [label="newQueueCh "]
+		label = "HTTP Interface";
+	}
+ newMessages [label="new Messages write channel "]
+ newQueues [label="new Queues write channel "]
+ newSubscribers [label="new Subscribers write channel "]
+
+ space_newMessages -> newMessages 
+ space_newQueues -> newQueues
+ space_newSubscribers ->  newSubscribers
+
+
+newMessages -> frontend_newMsgCh 
+newQueues -> frontend_newQueueCh
+newSubscribers -> frontend_newSubscribersCh 
+
+newQueues -> bootstrap_newSubscribersCh 
+newSubscribers -> bootstrap_newQueueCh
+}
