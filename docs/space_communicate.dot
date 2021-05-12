@@ -36,9 +36,9 @@ digraph {
         frontend_newQueueCh [label="newQueueCh "]
 		label = "HTTP Interface";
 	}
- newMessages [label="new Messages write channel "]
- newQueues [label="new Queues write channel "]
- newSubscribers [label="new Subscribers write channel "]
+ newMessages [label="Messages write chan"]
+ newQueues [label="Queues write chan"]
+ newSubscribers [label="Subscribers write chan"]
 
  space_newMessages -> newMessages 
  space_newQueues -> newQueues

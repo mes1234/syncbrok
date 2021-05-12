@@ -1,0 +1,25 @@
+@startuml
+group Single mode
+autonumber 1
+Client -> Frontend: Add single message 
+Frontend -> Queue : Save message 
+Queue -> Handler : Start process message
+Frontend -> Client : Return Id
+Handler -> Queue : Acknowlade message 
+end
+group Parented mode
+autonumber 1
+Client -> Frontend: Add message 
+Frontend -> Queue : Save message 
+Queue -> Handler : Start process message
+Frontend -> Client : Return Id
+
+Client -> Frontend : Add message with Parent Id
+Frontend -> Queue : Save message
+Frontend -> Client : Return Id
+Queue -> Queue : Get parent status
+Handler -> Queue : Acknowlade parent message 
+Queue -> Handler : Start process message
+Handler -> Queue : Acknowlade message 
+end
+@enduml
